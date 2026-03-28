@@ -1,13 +1,601 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta http-equiv="refresh" content="0;url=/pages/dashboard.html"/>
-<title>DriveHaus</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>DriveHaus — Premium Car Rentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <style>
-  body { background: #070707; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;
-    font-family: 'Cormorant Garamond', serif; color: #c8a44a; font-size: 2rem; font-weight: 300; }
+:root{--black:#070707;--off-black:#0e0e0e;--card:#111;--border:#1c1c1c;--mid:#282828;--muted:#4a4a4a;--dimmed:#7a7a7a;--text:#e6e2d8;--cream:#ede8d6;--gold:#c8a44a;--gold2:#e6c860;--gold-dim:rgba(200,164,74,.1);--red:#c44a4a;--green:#4aaa74;--font-display:'Cormorant Garamond',serif;--font-mono:'DM Mono',monospace;--font-body:'Syne',sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--text);font-family:var(--font-body);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none} button{cursor:pointer;border:none;background:none;font:inherit} input,select,textarea{font:inherit}
+::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:var(--off-black)} ::-webkit-scrollbar-thumb{background:var(--gold)}
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");opacity:.5}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.2rem 3rem;display:flex;align-items:center;justify-content:space-between;transition:all .3s;border-bottom:1px solid transparent}
+nav.scrolled{background:rgba(7,7,7,.92);backdrop-filter:blur(20px);border-color:var(--border)}
+.nav-logo{font-family:var(--font-display);font-size:1.5rem;font-weight:300;letter-spacing:.14em;color:var(--cream)}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dimmed);transition:color .2s}
+.nav-links a:hover{color:var(--cream)}
+.nav-admin{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;padding:.45rem 1.2rem;border:1px solid var(--muted);color:var(--dimmed);border-radius:2px;transition:all .2s}
+.nav-admin:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:6rem 3rem 5rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 72% 38%,rgba(200,164,74,.07),transparent 60%),linear-gradient(160deg,#0d0d0d,#070707 60%,#0a0905)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;mask-image:radial-gradient(ellipse 80% 80% at 78% 20%,black 20%,transparent 70%);opacity:.22}
+.hero-content{position:relative;z-index:1;max-width:680px}
+.hero-eyebrow{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.4rem;display:flex;align-items:center;gap:.8rem}
+.hero-eyebrow::before{content:'';width:36px;height:1px;background:var(--gold)}
+.hero-title{font-family:var(--font-display);font-size:clamp(3.2rem,7.5vw,6.5rem);font-weight:300;line-height:1.02;color:var(--cream);margin-bottom:1.4rem}
+.hero-title em{font-style:italic;color:var(--gold)}
+.hero-sub{font-size:.92rem;color:var(--dimmed);max-width:400px;margin-bottom:2.5rem;line-height:1.85}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:.85rem 2rem;background:var(--gold);color:var(--black);border-radius:2px;font-weight:500;transition:all .2s;display:inline-block}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-2px)}
+.btn-ghost{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:.85rem 2rem;border:1px solid var(--border);color:var(--dimmed);border-radius:2px;transition:all .2s;display:inline-block}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.hero-stats{position:absolute;right:3rem;bottom:5rem;z-index:1;display:flex;flex-direction:column;gap:1.8rem;align-items:flex-end}
+.stat-item{text-align:right}
+.stat-num{font-family:var(--font-display);font-size:2.6rem;font-weight:300;color:var(--cream);line-height:1}
+.stat-lbl{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:.2rem}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);animation:pulse 2.5s ease infinite;z-index:1}
+@keyframes pulse{0%,100%{opacity:.4;transform:translateX(-50%) translateY(0)}50%{opacity:1;transform:translateX(-50%) translateY(5px)}}
+
+/* ── SECTIONS ── */
+section{padding:6rem 3rem}
+.sec-label{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+.sec-label::before{content:'';width:20px;height:1px;background:var(--gold)}
+.sec-title{font-family:var(--font-display);font-size:clamp(1.8rem,3.5vw,3rem);font-weight:300;color:var(--cream);margin-bottom:.7rem}
+.sec-sub{color:var(--dimmed);font-size:.9rem;max-width:480px;line-height:1.85}
+
+/* ── FLEET GRID ── */
+#fleet{background:var(--off-black)}
+.fleet-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1.5rem;margin-bottom:2.5rem}
+.filter-bar{display:flex;gap:.5rem;flex-wrap:wrap}
+.fchip{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.38rem .9rem;border:1px solid var(--border);color:var(--dimmed);border-radius:2px;transition:all .18s}
+.fchip:hover,.fchip.active{border-color:var(--gold);color:var(--gold)}
+.cars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1px}
+.car-card{background:var(--card);border:1px solid var(--border);overflow:hidden;transition:all .25s;animation:fadeUp .5s ease both;cursor:pointer}
+.car-card:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 16px 50px rgba(0,0,0,.5)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.car-visual{height:190px;position:relative;display:flex;align-items:center;justify-content:center;padding:1rem;overflow:hidden}
+.car-visual svg{width:100%;max-width:270px;height:auto;filter:drop-shadow(0 8px 24px rgba(0,0,0,.7));position:relative;z-index:1;transition:transform .3s}
+.car-card:hover .car-visual svg{transform:scale(1.04)}
+.car-visual::after{content:'';position:absolute;bottom:0;left:0;right:0;height:65px;background:linear-gradient(to top,var(--card),transparent);z-index:2}
+.av-badge{position:absolute;top:.8rem;left:.8rem;z-index:3;font-family:var(--font-mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;padding:.24rem .65rem;border-radius:1px}
+.av-yes{background:rgba(74,170,116,.12);color:#4aaa74;border:1px solid rgba(74,170,116,.28)}
+.av-no{background:rgba(196,74,74,.1);color:#c44a4a;border:1px solid rgba(196,74,74,.22)}
+.car-tag{position:absolute;top:.8rem;right:.8rem;z-index:3;font-family:var(--font-mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;padding:.24rem .65rem;background:rgba(200,164,74,.1);color:var(--gold);border:1px solid rgba(200,164,74,.2)}
+.car-body{padding:1.3rem}
+.car-brand{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.15rem}
+.car-name{font-family:var(--font-display);font-size:1.5rem;font-weight:300;color:var(--cream);margin-bottom:.2rem}
+.car-tagline{font-size:.78rem;color:var(--dimmed);font-style:italic;margin-bottom:.9rem}
+.car-specs-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.9rem}
+.spec-p{font-family:var(--font-mono);font-size:.58rem;padding:.25rem .6rem;background:var(--off-black);border:1px solid var(--border);color:var(--dimmed)}
+.color-dots{display:flex;gap:.4rem;align-items:center;margin-bottom:1rem}
+.cdot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,.1)}
+.car-footer{display:flex;align-items:center;justify-content:space-between;padding-top:.9rem;border-top:1px solid var(--border)}
+.car-price{font-family:var(--font-display);font-size:1.7rem;font-weight:300;color:var(--cream)}
+.car-price span{font-family:var(--font-mono);font-size:.58rem;color:var(--dimmed)}
+.car-btns{display:flex;gap:.4rem}
+.btn-detail{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.45rem 1rem;border:1px solid var(--border);color:var(--dimmed);border-radius:2px;transition:all .18s}
+.btn-detail:hover{border-color:var(--muted);color:var(--text)}
+.btn-book{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.45rem 1rem;border:1px solid var(--gold);color:var(--gold);border-radius:2px;transition:all .18s}
+.btn-book:hover:not(:disabled){background:var(--gold);color:var(--black)}
+.btn-book:disabled{border-color:var(--border);color:var(--muted);cursor:not-allowed}
+
+/* ── HOW IT WORKS ── */
+#how{background:var(--black)}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;margin-top:3rem}
+.step-card{background:var(--card);border:1px solid var(--border);padding:1.8rem;position:relative}
+.step-num{font-family:var(--font-display);font-size:3.5rem;font-weight:300;color:var(--border);line-height:1;margin-bottom:1rem;transition:color .3s}
+.step-card:hover .step-num{color:var(--gold)}
+.step-title{font-size:1rem;color:var(--cream);margin-bottom:.5rem;font-weight:600}
+.step-desc{font-size:.82rem;color:var(--dimmed);line-height:1.7}
+
+/* ── BOOKING FORM ── */
+#book{background:var(--off-black)}
+.book-layout{display:grid;grid-template-columns:1fr 1.1fr;gap:4rem;align-items:start}
+.form-card{background:var(--card);border:1px solid var(--border);padding:2.5rem}
+.form-title{font-family:var(--font-display);font-size:1.8rem;font-weight:300;color:var(--cream);margin-bottom:.3rem}
+.form-sub{font-family:var(--font-mono);font-size:.62rem;color:var(--dimmed);letter-spacing:.1em;margin-bottom:2rem}
+.field{margin-bottom:1.3rem}
+.field label{display:block;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmed);margin-bottom:.45rem}
+.field input,.field select,.field textarea{width:100%;background:var(--off-black);border:1px solid var(--border);color:var(--text);padding:.7rem 1rem;border-radius:2px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.price-box{background:var(--off-black);border:1px solid var(--border);padding:1.1rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem}
+.price-box .lbl{font-family:var(--font-mono);font-size:.63rem;color:var(--dimmed)}
+.price-box .amt{font-family:var(--font-display);font-size:2rem;color:var(--gold)}
+.btn-submit{width:100%;padding:1rem;background:var(--gold);color:var(--black);font-family:var(--font-mono);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;font-weight:500;border-radius:2px;transition:all .2s}
+.btn-submit:hover{background:var(--gold2);transform:translateY(-1px)}
+.info-panel{display:flex;flex-direction:column;gap:1.5rem}
+.info-card{background:var(--card);border:1px solid var(--border);padding:1.5rem}
+.info-card-title{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.87rem}
+.info-row:last-child{border-bottom:none}
+.info-row .k{color:var(--dimmed)}
+.info-row .v{color:var(--cream);font-family:var(--font-mono);font-size:.7rem}
+
+/* ── FOOTER ── */
+footer{background:var(--off-black);border-top:1px solid var(--border);padding:2.5rem 3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem}
+.footer-logo{font-family:var(--font-display);font-size:1.3rem;font-weight:300;color:var(--cream)}
+.footer-logo span{color:var(--gold)}
+.footer-copy{font-family:var(--font-mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em}
+.footer-links{display:flex;gap:1.8rem}
+.footer-links a{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+.footer-links a:hover{color:var(--gold)}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:1rem}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--card);border:1px solid var(--border);width:min(860px,95vw);max-height:90vh;overflow-y:auto;transform:scale(.96);transition:transform .25s;position:relative}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-sm{width:min(500px,95vw)}
+.modal-header{padding:1.8rem 2rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.modal-title{font-family:var(--font-display);font-size:1.7rem;font-weight:300;color:var(--cream)}
+.modal-close{color:var(--dimmed);font-size:1.3rem;transition:color .2s}
+.modal-close:hover{color:var(--cream)}
+.modal-body{padding:1.8rem 2rem}
+.modal-footer{padding:1.2rem 2rem;border-top:1px solid var(--border);display:flex;gap:.8rem;justify-content:flex-end}
+.detail-hero{display:grid;grid-template-columns:1.1fr 1fr;border-bottom:1px solid var(--border)}
+.detail-visual{padding:2rem;display:flex;align-items:center;justify-content:center;min-height:220px}
+.detail-visual svg{width:100%;max-width:320px;height:auto;filter:drop-shadow(0 12px 40px rgba(0,0,0,.7))}
+.detail-info{padding:2rem;border-left:1px solid var(--border)}
+.specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:1.3rem}
+.spec-block{background:var(--off-black);padding:.9rem;border:1px solid var(--border)}
+.sb-icon{font-size:1.1rem;margin-bottom:.3rem}
+.sb-label{font-family:var(--font-mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+.sb-val{font-size:.9rem;color:var(--cream);font-weight:600}
+.feat-list{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:1.2rem}
+.feat-item{display:flex;gap:.5rem;align-items:center;padding:.4rem .7rem;background:var(--off-black);border:1px solid var(--border);font-family:var(--font-mono);font-size:.6rem;color:var(--dimmed)}
+.feat-check{color:#4aaa74}
+.receipt-line{display:flex;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border);font-size:.87rem}
+.receipt-line:last-child{border-bottom:none}
+.receipt-line .k{color:var(--dimmed)}
+.receipt-line .v{font-family:var(--font-mono);font-size:.74rem;color:var(--cream)}
+.receipt-total{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:var(--off-black);border:1px solid var(--border);margin-top:.8rem}
+.receipt-total .k{font-family:var(--font-mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dimmed)}
+.receipt-total .v{font-family:var(--font-display);font-size:1.9rem;color:var(--gold)}
+.success-box{text-align:center;padding:2rem}
+.success-icon{font-size:3.5rem;margin-bottom:1rem}
+.success-title{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--cream);margin-bottom:.5rem}
+.success-sub{font-family:var(--font-mono);font-size:.68rem;color:var(--dimmed);letter-spacing:.08em;line-height:1.7}
+.bk-id-display{font-family:var(--font-mono);font-size:1.1rem;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(200,164,74,.3);padding:.7rem 1.4rem;margin:1.2rem auto;display:inline-block;letter-spacing:.1em}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:2rem;right:2rem;z-index:500;display:flex;flex-direction:column;gap:.6rem}
+.toast{background:var(--card);border:1px solid var(--border);padding:.9rem 1.3rem;min-width:280px;display:flex;align-items:flex-start;gap:.7rem;animation:toastIn .3s ease;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:opacity .4s}
+.toast.success{border-left:3px solid #4aaa74}
+.toast.error{border-left:3px solid #c44a4a}
+.toast-icon{font-size:1rem;margin-top:.1rem}
+.toast-title{font-size:.83rem;color:var(--cream);margin-bottom:.15rem}
+.toast-msg{font-family:var(--font-mono);font-size:.65rem;color:var(--dimmed)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:900px){
+  nav{padding:1.1rem 1.5rem}
+  section{padding:4rem 1.5rem}
+  .book-layout{grid-template-columns:1fr}
+  .hero-stats{position:static;flex-direction:row;gap:2rem;margin-top:2rem}
+  #hero{padding-top:6rem}
+  .detail-hero{grid-template-columns:1fr}
+  .detail-info{border-left:none;border-top:1px solid var(--border)}
+  .feat-list,.specs-grid{grid-template-columns:1fr}
+  .field-row{grid-template-columns:1fr}
+}
 </style>
 </head>
-<body>Loading DriveHaus…</body>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">DRIVE<span>HAUS</span></div>
+  <div class="nav-links">
+    <a href="#fleet">Fleet</a>
+    <a href="#how">How It Works</a>
+    <a href="#book">Book Now</a>
+  </div>
+  <a href="/admin" class="nav-admin">Admin ↗</a>
+</nav>
+
+<div id="toast-container"></div>
+
+<!-- Car Detail Modal -->
+<div class="modal-overlay" id="detail-overlay">
+  <div class="modal"><div id="detail-content"></div></div>
+</div>
+
+<!-- Booking Confirm Modal -->
+<div class="modal-overlay" id="confirm-overlay">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">Confirm Booking</div>
+      <button class="modal-close" onclick="closeOverlay('confirm-overlay')">✕</button>
+    </div>
+    <div class="modal-body" id="confirm-body"></div>
+    <div class="modal-footer" id="confirm-footer"></div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="success-overlay">
+  <div class="modal modal-sm">
+    <div class="modal-body" id="success-body"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" style="flex:1;padding:.85rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border);color:var(--dimmed);transition:all .2s" onclick="closeOverlay('success-overlay');document.getElementById('book').scrollIntoView({behavior:'smooth'})">Book Another</button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Premium Car Rentals</div>
+    <h1 class="hero-title">Drive the<br><em>Extraordinary</em></h1>
+    <p class="hero-sub">Handpicked fleet. Transparent pricing. Seamless booking. Your perfect ride is a click away.</p>
+    <div class="hero-btns">
+      <a href="#fleet" class="btn-primary">Browse Fleet</a>
+      <a href="#book" class="btn-ghost">Book Now</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item"><div class="stat-num" id="h-avail">—</div><div class="stat-lbl">Cars Available</div></div>
+    <div class="stat-item"><div class="stat-num">4.9★</div><div class="stat-lbl">Customer Rating</div></div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</section>
+
+<!-- FLEET -->
+<section id="fleet">
+  <div class="fleet-top">
+    <div>
+      <div class="sec-label">Our Fleet</div>
+      <h2 class="sec-title">Choose Your Ride</h2>
+      <p class="sec-sub">Click any car to see full specifications. All prices per day, insurance included.</p>
+    </div>
+    <div class="filter-bar">
+      <button class="fchip active" onclick="setFilter('all',this)">All</button>
+      <button class="fchip" onclick="setFilter('available',this)">Available</button>
+      <button class="fchip" onclick="setFilter('sedan',this)">Sedan</button>
+      <button class="fchip" onclick="setFilter('suv',this)">SUV</button>
+      <button class="fchip" onclick="setFilter('electric',this)">Electric</button>
+      <button class="fchip" onclick="setFilter('sports',this)">Sports</button>
+    </div>
+  </div>
+  <div class="cars-grid" id="cars-grid"><div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--dimmed);font-family:var(--font-mono);font-size:.75rem;letter-spacing:.1em">Loading fleet…</div></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="sec-label">Simple Process</div>
+  <h2 class="sec-title">How It Works</h2>
+  <div class="steps-grid">
+    <div class="step-card"><div class="step-num">01</div><div class="step-title">Browse & Choose</div><div class="step-desc">Explore our premium fleet. Filter by type, check full specs and available colors.</div></div>
+    <div class="step-card"><div class="step-num">02</div><div class="step-title">Fill Your Details</div><div class="step-desc">Enter your name, contact info and how many days you need. Price is calculated instantly.</div></div>
+    <div class="step-card"><div class="step-num">03</div><div class="step-title">Confirm Booking</div><div class="step-desc">Review your booking summary and confirm. You'll receive a unique booking ID instantly.</div></div>
+    <div class="step-card"><div class="step-num">04</div><div class="step-title">Pick Up & Drive</div><div class="step-desc">Bring your booking ID to our desk. Our team handles the keys and paperwork.</div></div>
+  </div>
+</section>
+
+<!-- BOOKING FORM -->
+<section id="book">
+  <div class="book-layout">
+    <div>
+      <div class="sec-label">Rent a Car</div>
+      <h2 class="sec-title">Reserve Your Vehicle</h2>
+      <p class="sec-sub" style="margin-bottom:2.5rem">Fill in your details below. Our team will confirm your booking and have the car ready.</p>
+      <div class="form-card">
+        <div class="form-title">Booking Details</div>
+        <div class="form-sub">Fields marked * are required</div>
+        <div class="field"><label>Full Name *</label><input id="b-name" placeholder="e.g. Ravi Sharma"/></div>
+        <div class="field-row">
+          <div class="field"><label>Email</label><input id="b-email" type="email" placeholder="your@email.com"/></div>
+          <div class="field"><label>Phone</label><input id="b-phone" placeholder="+91 98765 43210"/></div>
+        </div>
+        <div class="field"><label>Select Vehicle *</label>
+          <select id="b-car" onchange="updatePreview()"><option value="">— Choose an available car —</option></select>
+        </div>
+        <div class="field"><label>Rental Duration (Days) *</label>
+          <input id="b-days" type="number" min="1" max="365" value="1" oninput="updatePreview()"/>
+        </div>
+        <div class="field"><label>Special Requirements</label>
+          <textarea id="b-notes" placeholder="Any special requests or notes…" style="min-height:70px"></textarea>
+        </div>
+        <div class="price-box"><span class="lbl">Estimated Total</span><span class="amt" id="b-price">$0.00</span></div>
+        <button class="btn-submit" onclick="openConfirm()">Review & Confirm →</button>
+      </div>
+    </div>
+    <div class="info-panel">
+      <div class="info-card" id="selected-car-panel">
+        <div class="info-card-title">Selected Vehicle</div>
+        <div style="text-align:center;padding:1.5rem;color:var(--muted);font-family:var(--font-mono);font-size:.7rem">Choose a car above</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">What's Included</div>
+        <div class="info-row"><span class="k">Insurance</span><span class="v">Fully Covered</span></div>
+        <div class="info-row"><span class="k">Fuel Policy</span><span class="v">Full-to-Full</span></div>
+        <div class="info-row"><span class="k">Mileage</span><span class="v">Unlimited</span></div>
+        <div class="info-row"><span class="k">24/7 Support</span><span class="v">Available</span></div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">Rental Policy</div>
+        <div class="info-row"><span class="k">Min Duration</span><span class="v">1 Day</span></div>
+        <div class="info-row"><span class="k">Returns</span><span class="v">Managed at desk</span></div>
+        <div class="info-row"><span class="k">Cancellations</span><span class="v">Contact our team</span></div>
+        <div class="info-row"><span class="k">ID Required</span><span class="v">Valid licence</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">DRIVE<span>HAUS</span></div>
+  <div class="footer-copy">© 2025 DriveHaus. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="#fleet">Fleet</a>
+    <a href="#how">How It Works</a>
+    <a href="#book">Book</a>
+    <a href="/admin">Admin</a>
+  </div>
+</footer>
+
+<script>
+const API = '/api';
+async function apiFetch(path, opts={}) {
+  const res = await fetch(API+path,{headers:{'Content-Type':'application/json'},...opts});
+  const d = await res.json();
+  if(!res.ok) throw new Error(d.error||'Request failed');
+  return d;
+}
+const GET  = p => apiFetch(p);
+const POST = (p,b) => apiFetch(p,{method:'POST',body:JSON.stringify(b)});
+
+function toast(title,msg='',type='success'){
+  let c=document.getElementById('toast-container');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<div class="toast-icon">${type==='success'?'✓':'✕'}</div><div><div class="toast-title">${title}</div>${msg?`<div class="toast-msg">${msg}</div>`:''}</div>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),400)},4000);
+}
+function openOverlay(id){document.getElementById(id).classList.add('open')}
+function closeOverlay(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')}));
+
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>60));
+
+// ── Car SVGs ──────────────────────────────────────────────────────────────────
+function carSVG(car){
+  const c=car.svgColor||car.svg_color||'#aaa',acc=car.accentColor||car.accent_color||'#c9a84c';
+  const svgs={
+    'C001':`<svg viewBox="0 0 280 120" fill="none"><ellipse cx="140" cy="108" rx="130" ry="6" fill="rgba(0,0,0,0.4)"/><path d="M20 80 L35 60 L60 42 L100 36 L180 36 L220 44 L255 60 L260 80 Z" fill="${c}" opacity="0.95"/><path d="M60 42 L70 28 L110 20 L175 20 L205 36 L180 36 L100 36 Z" fill="${c}"/><path d="M62 42 L72 29 L112 21 L174 21 L203 36" stroke="${acc}" stroke-width="1.5" fill="none" opacity="0.6"/><path d="M68 40 L78 26 L113 22 L113 40 Z" fill="rgba(100,160,220,0.35)"/><path d="M116 22 L175 22 L200 36 L116 40 Z" fill="rgba(100,160,220,0.35)"/><path d="M30 72 L255 72" stroke="${acc}" stroke-width="1" opacity="0.4"/><circle cx="70" cy="90" r="20" fill="#111" stroke="${acc}" stroke-width="2"/><circle cx="70" cy="90" r="12" fill="#222"/><circle cx="70" cy="90" r="4" fill="${acc}"/><circle cx="205" cy="90" r="20" fill="#111" stroke="${acc}" stroke-width="2"/><circle cx="205" cy="90" r="12" fill="#222"/><circle cx="205" cy="90" r="4" fill="${acc}"/><path d="M252 64 L260 68 L258 74 L248 72 Z" fill="${acc}" opacity="0.9"/></svg>`,
+    'C002':`<svg viewBox="0 0 280 120" fill="none"><ellipse cx="140" cy="108" rx="128" ry="6" fill="rgba(0,0,0,0.4)"/><path d="M18 78 L32 58 L58 40 L105 34 L182 34 L222 44 L258 62 L260 80 Z" fill="${c}" opacity="0.95"/><path d="M58 40 L65 24 L108 18 L178 18 L210 34 L182 34 L105 34 Z" fill="${c}"/><path d="M66 39 L75 24 L110 20 L110 39 Z" fill="rgba(120,170,230,0.35)"/><path d="M113 20 L177 20 L207 35 L113 39 Z" fill="rgba(120,170,230,0.35)"/><path d="M25 70 L255 70" stroke="${acc}" stroke-width="1.2" opacity="0.35"/><circle cx="68" cy="90" r="21" fill="#0f0f0f" stroke="${acc}" stroke-width="2"/><circle cx="68" cy="90" r="13" fill="#1a1a1a"/><circle cx="68" cy="90" r="5" fill="${acc}"/><circle cx="207" cy="90" r="21" fill="#0f0f0f" stroke="${acc}" stroke-width="2"/><circle cx="207" cy="90" r="13" fill="#1a1a1a"/><circle cx="207" cy="90" r="5" fill="${acc}"/><path d="M254 62 L262 67 L260 74 L250 72 Z" fill="${acc}" opacity="0.9"/></svg>`,
+    'C003':`<svg viewBox="0 0 280 130" fill="none"><ellipse cx="140" cy="116" rx="125" ry="7" fill="rgba(0,0,0,0.45)"/><path d="M22 88 L22 52 L35 38 L245 38 L258 52 L258 88 Z" fill="${c}" opacity="0.95"/><path d="M35 38 L38 22 L242 22 L245 38 Z" fill="${c}" opacity="0.9"/><rect x="45" y="18" width="190" height="4" fill="${acc}" opacity="0.5" rx="1"/><rect x="60" y="14" width="6" height="8" fill="${acc}" opacity="0.4"/><rect x="120" y="14" width="6" height="8" fill="${acc}" opacity="0.4"/><rect x="180" y="14" width="6" height="8" fill="${acc}" opacity="0.4"/><rect x="42" y="25" width="60" height="28" rx="2" fill="rgba(100,140,100,0.3)"/><rect x="112" y="25" width="60" height="28" rx="2" fill="rgba(100,140,100,0.3)"/><rect x="182" y="25" width="52" height="28" rx="2" fill="rgba(100,140,100,0.3)"/><rect x="232" y="52" width="26" height="28" fill="#111" stroke="${acc}" stroke-width="1.5" rx="1"/><rect x="22" y="78" width="236" height="10" fill="#1a1a1a" stroke="${acc}" stroke-width="1" opacity="0.7"/><circle cx="72" cy="99" r="24" fill="#111" stroke="${acc}" stroke-width="2.5"/><circle cx="72" cy="99" r="15" fill="#1d1d1d"/><circle cx="72" cy="99" r="6" fill="${acc}"/><circle cx="208" cy="99" r="24" fill="#111" stroke="${acc}" stroke-width="2.5"/><circle cx="208" cy="99" r="15" fill="#1d1d1d"/><circle cx="208" cy="99" r="6" fill="${acc}"/><rect x="244" y="44" width="16" height="10" fill="${acc}" opacity="0.8" rx="1"/></svg>`,
+    'C004':`<svg viewBox="0 0 280 120" fill="none"><ellipse cx="140" cy="110" rx="130" ry="6" fill="rgba(0,0,0,0.4)"/><path d="M18 82 L25 58 L50 42 L95 36 L185 36 L225 44 L255 62 L258 82 Z" fill="${c}" opacity="0.95"/><path d="M50 42 L58 26 L100 20 L182 20 L218 36 L185 36 L95 36 Z" fill="${c}"/><path d="M62 38 L68 26 L110 22 L110 38 Z" fill="rgba(80,130,200,0.28)"/><rect x="115" y="22" width="95" height="16" rx="2" fill="rgba(80,130,200,0.22)" stroke="rgba(100,160,255,0.3)" stroke-width=".5"/><path d="M240 56 L255 56 L258 62 L255 70 L240 70 L237 64 Z" fill="#0d0d0d" stroke="${acc}" stroke-width="1.5"/><line x1="247" y1="56" x2="247" y2="70" stroke="${acc}" stroke-width="1.2" opacity="0.6"/><path d="M24 68 L255 68" stroke="${acc}" stroke-width="1.5" opacity="0.4"/><circle cx="72" cy="92" r="22" fill="#0a0a0a" stroke="${acc}" stroke-width="2.5"/><circle cx="72" cy="92" r="14" fill="#1a1a1a"/><line x1="72" y1="78" x2="72" y2="106" stroke="${acc}" stroke-width="1.5" opacity="0.7"/><line x1="58" y1="92" x2="86" y2="92" stroke="${acc}" stroke-width="1.5" opacity="0.7"/><circle cx="72" cy="92" r="4" fill="${acc}"/><circle cx="208" cy="92" r="22" fill="#0a0a0a" stroke="${acc}" stroke-width="2.5"/><circle cx="208" cy="92" r="14" fill="#1a1a1a"/><line x1="208" y1="78" x2="208" y2="106" stroke="${acc}" stroke-width="1.5" opacity="0.7"/><line x1="194" y1="92" x2="222" y2="92" stroke="${acc}" stroke-width="1.5" opacity="0.7"/><circle cx="208" cy="92" r="4" fill="${acc}"/><path d="M253 54 L262 58 L260 66 L250 64 Z" fill="${acc}" opacity="0.9"/></svg>`,
+    'C005':`<svg viewBox="0 0 280 120" fill="none"><ellipse cx="140" cy="108" rx="128" ry="6" fill="rgba(0,0,0,0.35)"/><path d="M22 80 L35 56 L62 38 L108 32 L178 32 L222 42 L255 58 L258 80 Z" fill="${c}" opacity="0.92"/><path d="M62 38 L70 22 L115 16 L175 16 L208 32 L178 32 L108 32 Z" fill="${c}"/><path d="M70 36 L78 22 L116 17 L175 17 L207 33 L108 33 Z" fill="rgba(60,180,120,0.2)" stroke="rgba(60,180,120,0.4)" stroke-width=".8"/><circle cx="22" cy="56" r="4" fill="${acc}" opacity="0.8"/><circle cx="22" cy="56" r="2" fill="rgba(60,220,120,0.9)"/><path d="M138 42 L132 54 L138 54 L132 66 L148 52 L142 52 L148 42 Z" fill="${acc}" opacity="0.7"/><path d="M28 68 L255 68" stroke="${acc}" stroke-width="1" opacity="0.35"/><circle cx="70" cy="90" r="21" fill="#0d0d0d" stroke="${acc}" stroke-width="2"/><circle cx="70" cy="90" r="17" fill="#161616"/><circle cx="70" cy="90" r="10" fill="#1d1d1d"/><circle cx="70" cy="90" r="5" fill="${acc}" opacity="0.9"/><path d="M70 69 A21 21 0 0 1 91 90" stroke="${acc}" stroke-width="2" fill="none" opacity="0.5"/><circle cx="207" cy="90" r="21" fill="#0d0d0d" stroke="${acc}" stroke-width="2"/><circle cx="207" cy="90" r="17" fill="#161616"/><circle cx="207" cy="90" r="10" fill="#1d1d1d"/><circle cx="207" cy="90" r="5" fill="${acc}" opacity="0.9"/><path d="M207 69 A21 21 0 0 1 228 90" stroke="${acc}" stroke-width="2" fill="none" opacity="0.5"/></svg>`,
+    'C006':`<svg viewBox="0 0 280 120" fill="none"><ellipse cx="140" cy="110" rx="130" ry="6" fill="rgba(0,0,0,0.5)"/><path d="M18 80 L28 62 L55 48 L90 36 L190 34 L230 44 L255 58 L260 80 Z" fill="${c}" opacity="0.95"/><path d="M90 36 L95 20 L175 18 L210 30 L190 34 Z" fill="${c}"/><path d="M97 34 L101 21 L130 19 L130 34 Z" fill="rgba(200,80,80,0.25)"/><path d="M133 19 L175 19 L205 31 L133 34 Z" fill="rgba(200,80,80,0.3)"/><path d="M245 54 L260 56 L262 66 L258 72 L245 70 Z" fill="#0a0a0a" stroke="${acc}" stroke-width="1.5"/><ellipse cx="175" cy="34" rx="25" ry="6" fill="rgba(0,0,0,0.4)" stroke="${acc}" stroke-width="1" opacity="0.5"/><path d="M90 58 L255 58" stroke="${acc}" stroke-width="2.5" opacity="0.5"/><path d="M28 70 L256 70" stroke="${acc}" stroke-width="1.5" opacity="0.4"/><rect x="20" y="76" width="8" height="4" rx="2" fill="${acc}" opacity="0.7"/><rect x="30" y="76" width="8" height="4" rx="2" fill="${acc}" opacity="0.7"/><circle cx="75" cy="92" r="23" fill="#0a0a0a" stroke="${acc}" stroke-width="2.5"/><circle cx="75" cy="92" r="15" fill="#1a1a1a"/><line x1="75" y1="77" x2="75" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="89" y1="83" x2="75" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="84" y1="99" x2="75" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="66" y1="99" x2="75" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="61" y1="83" x2="75" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><circle cx="75" cy="92" r="5" fill="${acc}"/><circle cx="210" cy="92" r="23" fill="#0a0a0a" stroke="${acc}" stroke-width="2.5"/><circle cx="210" cy="92" r="15" fill="#1a1a1a"/><line x1="210" y1="77" x2="210" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="224" y1="83" x2="210" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="219" y1="99" x2="210" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="201" y1="99" x2="210" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><line x1="196" y1="83" x2="210" y2="92" stroke="${acc}" stroke-width="2" opacity="0.6"/><circle cx="210" cy="92" r="5" fill="${acc}"/><path d="M252 52 L263 55 L262 64 L250 62 Z" fill="${acc}" opacity="0.9"/></svg>`,
+  };
+  return svgs[car.id]||`<svg viewBox="0 0 280 120"><text x="140" y="70" text-anchor="middle" fill="${c}" font-size="60">🚗</text></svg>`;
+}
+
+function fmtCurrency(n){return '$'+(+n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let allCars=[],filterMode='all',pendingBooking=null;
+
+// ── Load Cars ─────────────────────────────────────────────────────────────────
+async function loadCars(){
+  try{
+    allCars=await GET('/cars');
+    document.getElementById('h-avail').textContent=allCars.filter(c=>c.isAvailable).length;
+    populateSelect();
+    applyFilter();
+  }catch(e){
+    document.getElementById('cars-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--dimmed);font-family:var(--font-mono);font-size:.72rem">Could not load fleet. Is the server running?</div>';
+  }
+}
+
+function populateSelect(){
+  const sel=document.getElementById('b-car');
+  const av=allCars.filter(c=>c.isAvailable);
+  sel.innerHTML='<option value="">— Choose an available car —</option>'+
+    av.map(c=>`<option value="${c.id}" data-price="${c.price_per_day||c.pricePerDay}">${c.brand} ${c.model} — $${c.price_per_day||c.pricePerDay}/day</option>`).join('');
+}
+
+function setFilter(f,btn){
+  filterMode=f;
+  document.querySelectorAll('.fchip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function applyFilter(){
+  let cars=allCars;
+  if(filterMode==='available') cars=cars.filter(c=>c.isAvailable);
+  else if(filterMode!=='all') cars=cars.filter(c=>c.category===filterMode);
+  renderGrid(cars);
+}
+
+function renderGrid(cars){
+  const g=document.getElementById('cars-grid');
+  if(!cars.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--dimmed);font-family:var(--font-mono);font-size:.72rem">No cars found.</div>';return;}
+  g.innerHTML=cars.map((c,i)=>{
+    const tags=Array.isArray(c.tags)?c.tags:JSON.parse(c.tags||'[]');
+    const colors=Array.isArray(c.colors)?c.colors:JSON.parse(c.colors||'[]');
+    return `<div class="car-card" style="animation-delay:${i*.06}s" onclick="openDetail('${c.id}')">
+      <div class="car-visual" style="background:${c.bgGradient||c.bg_gradient}">
+        ${carSVG(c)}
+        <span class="av-badge ${c.isAvailable?'av-yes':'av-no'}">${c.isAvailable?'● Available':'● Rented'}</span>
+        ${tags[0]?`<span class="car-tag">${tags[0]}</span>`:''}
+      </div>
+      <div class="car-body">
+        <div class="car-brand">${c.brand} · ${c.year}</div>
+        <div class="car-name">${c.model}</div>
+        <div class="car-tagline">${c.tagline||''}</div>
+        <div class="car-specs-row">
+          <div class="spec-p">👥 ${c.seats}S</div>
+          <div class="spec-p">⛽ ${c.fuel}</div>
+          <div class="spec-p">⚙️ ${c.transmission}</div>
+          <div class="spec-p">🏎 ${c.power}</div>
+          <div class="spec-p">⚡ ${c.acceleration}</div>
+        </div>
+        <div class="color-dots">
+          ${colors.slice(0,4).map(col=>`<div class="cdot" style="background:${col.hex}" title="${col.name}"></div>`).join('')}
+        </div>
+        <div class="car-footer">
+          <div class="car-price">$${c.price_per_day||c.pricePerDay} <span>/ day</span></div>
+          <div class="car-btns" onclick="event.stopPropagation()">
+            <button class="btn-detail" onclick="openDetail('${c.id}')">Details</button>
+            <button class="btn-book" ${!c.isAvailable?'disabled':''} onclick="quickBook('${c.id}')">${c.isAvailable?'Book →':'Rented'}</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Car Detail ────────────────────────────────────────────────────────────────
+function openDetail(id){
+  const c=allCars.find(x=>x.id===id);if(!c)return;
+  const tags=Array.isArray(c.tags)?c.tags:JSON.parse(c.tags||'[]');
+  const colors=Array.isArray(c.colors)?c.colors:JSON.parse(c.colors||'[]');
+  const features=Array.isArray(c.features)?c.features:JSON.parse(c.features||'[]');
+  document.getElementById('detail-content').innerHTML=`
+    <div class="detail-hero">
+      <div class="detail-visual" style="background:${c.bgGradient||c.bg_gradient}">${carSVG(c)}</div>
+      <div class="detail-info">
+        <div style="margin-bottom:.5rem"><span class="av-badge ${c.isAvailable?'av-yes':'av-no'}">${c.isAvailable?'● Available':'● Rented'}</span></div>
+        <div style="font-family:var(--font-mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem">${c.brand} · ${c.year} · ${c.id}</div>
+        <div style="font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--cream);margin-bottom:.2rem">${c.model}</div>
+        <div style="font-size:.82rem;color:var(--dimmed);font-style:italic;margin-bottom:1.2rem">${c.tagline||''}</div>
+        <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+          <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:300;color:var(--gold);line-height:1">$${c.price_per_day||c.pricePerDay}</div>
+          <div style="font-family:var(--font-mono);font-size:.62rem;color:var(--dimmed);margin-bottom:.35rem">/day</div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">${tags.map(t=>`<span style="font-family:var(--font-mono);font-size:.58rem;padding:.22rem .6rem;background:rgba(200,164,74,.1);color:var(--gold);border:1px solid rgba(200,164,74,.2)">${t}</span>`).join('')}</div>
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap">${colors.map(col=>`<div style="display:flex;flex-direction:column;align-items:center;gap:.3rem"><div style="width:26px;height:26px;border-radius:50%;background:${col.hex};border:2px solid rgba(255,255,255,.1)"></div><div style="font-family:var(--font-mono);font-size:.52rem;color:var(--muted);text-align:center;max-width:55px">${col.name}</div></div>`).join('')}</div>
+      </div>
+    </div>
+    <div style="padding:1.5rem">
+      <div style="font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Full Specifications</div>
+      <div class="specs-grid">
+        <div class="spec-block"><div class="sb-icon">🔧</div><div class="sb-label">Engine</div><div class="sb-val">${c.engine}</div></div>
+        <div class="spec-block"><div class="sb-icon">💪</div><div class="sb-label">Power</div><div class="sb-val">${c.power}</div></div>
+        <div class="spec-block"><div class="sb-icon">🔩</div><div class="sb-label">Torque</div><div class="sb-val">${c.torque}</div></div>
+        <div class="spec-block"><div class="sb-icon">⚡</div><div class="sb-label">0-100 km/h</div><div class="sb-val">${c.acceleration}</div></div>
+        <div class="spec-block"><div class="sb-icon">🏁</div><div class="sb-label">Top Speed</div><div class="sb-val">${c.top_speed||c.topSpeed}</div></div>
+        <div class="spec-block"><div class="sb-icon">⛽</div><div class="sb-label">Fuel</div><div class="sb-val">${c.fuel}</div></div>
+        <div class="spec-block"><div class="sb-icon">🗺</div><div class="sb-label">Mileage</div><div class="sb-val">${c.mileage}</div></div>
+        <div class="spec-block"><div class="sb-icon">⚙️</div><div class="sb-label">Gearbox</div><div class="sb-val">${c.transmission}</div></div>
+        <div class="spec-block"><div class="sb-icon">👥</div><div class="sb-label">Seats</div><div class="sb-val">${c.seats}</div></div>
+        <div class="spec-block"><div class="sb-icon">🧳</div><div class="sb-label">Boot</div><div class="sb-val">${c.luggage}</div></div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem">Features & Technology</div>
+      <div class="feat-list">${features.map(f=>`<div class="feat-item"><span class="feat-check">✓</span>${f}</div>`).join('')}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" style="flex:1;padding:.85rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border);color:var(--dimmed)" onclick="closeOverlay('detail-overlay')">Close</button>
+      <button class="btn-primary" style="flex:2;padding:.85rem;font-size:.7rem" ${!c.isAvailable?'disabled style="opacity:.4;cursor:not-allowed"':''}
+        onclick="closeOverlay('detail-overlay');quickBook('${c.id}')">
+        ${c.isAvailable?'Book This Car →':'Currently Unavailable'}
+      </button>
+    </div>`;
+  openOverlay('detail-overlay');
+}
+
+// ── Booking ───────────────────────────────────────────────────────────────────
+function quickBook(id){
+  document.getElementById('b-car').value=id;
+  updatePreview();
+  document.getElementById('book').scrollIntoView({behavior:'smooth'});
+}
+
+function updatePreview(){
+  const sel=document.getElementById('b-car');
+  const days=+document.getElementById('b-days').value||0;
+  const price=sel.selectedOptions[0]?+sel.selectedOptions[0].dataset.price||0:0;
+  document.getElementById('b-price').textContent=fmtCurrency(price*days);
+
+  const panel=document.getElementById('selected-car-panel');
+  if(sel.value){
+    const c=allCars.find(x=>x.id===sel.value);
+    if(c) panel.innerHTML=`<div class="info-card-title">Selected Vehicle</div>
+      <div class="info-row"><span class="k">Vehicle</span><span class="v">${c.brand} ${c.model}</span></div>
+      <div class="info-row"><span class="k">Engine</span><span class="v">${c.engine}</span></div>
+      <div class="info-row"><span class="k">Power</span><span class="v">${c.power}</span></div>
+      <div class="info-row"><span class="k">Fuel</span><span class="v">${c.fuel}</span></div>
+      <div class="info-row"><span class="k">Seats</span><span class="v">${c.seats}</span></div>
+      <div class="info-row"><span class="k">Rate</span><span class="v">$${c.price_per_day||c.pricePerDay}/day</span></div>`;
+  } else {
+    panel.innerHTML=`<div class="info-card-title">Selected Vehicle</div><div style="text-align:center;padding:1.5rem;color:var(--muted);font-family:var(--font-mono);font-size:.7rem">Choose a car above</div>`;
+  }
+}
+
+function openConfirm(){
+  const name=document.getElementById('b-name').value.trim();
+  const carId=document.getElementById('b-car').value;
+  const days=+document.getElementById('b-days').value;
+  const email=document.getElementById('b-email').value.trim();
+  const phone=document.getElementById('b-phone').value.trim();
+  const notes=document.getElementById('b-notes').value.trim();
+  if(!name){toast('Missing Name','Please enter your full name.','error');return;}
+  if(!carId){toast('No Car Selected','Please select a vehicle.','error');return;}
+  if(!days||days<1){toast('Invalid Duration','Enter at least 1 day.','error');return;}
+  const car=allCars.find(c=>c.id===carId);
+  const total=(car.price_per_day||car.pricePerDay)*days;
+  pendingBooking={customerName:name,customerEmail:email||undefined,customerPhone:phone||undefined,carId,rentalDays:days,notes:notes||undefined};
+  document.getElementById('confirm-body').innerHTML=`
+    <div class="receipt-line"><span class="k">Customer</span><span class="v">${name}</span></div>
+    ${email?`<div class="receipt-line"><span class="k">Email</span><span class="v">${email}</span></div>`:''}
+    ${phone?`<div class="receipt-line"><span class="k">Phone</span><span class="v">${phone}</span></div>`:''}
+    <div class="receipt-line"><span class="k">Vehicle</span><span class="v">${car.brand} ${car.model}</span></div>
+    <div class="receipt-line"><span class="k">Duration</span><span class="v">${days} day${days>1?'s':''}</span></div>
+    <div class="receipt-line"><span class="k">Rate</span><span class="v">$${car.price_per_day||car.pricePerDay}/day</span></div>
+    ${notes?`<div class="receipt-line"><span class="k">Notes</span><span class="v">${notes}</span></div>`:''}
+    <div class="receipt-total"><span class="k">Total</span><span class="v">${fmtCurrency(total)}</span></div>`;
+  document.getElementById('confirm-footer').innerHTML=`
+    <button class="btn-ghost" style="flex:1;padding:.85rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border);color:var(--dimmed)" onclick="closeOverlay('confirm-overlay')">Edit</button>
+    <button class="btn-primary" style="flex:2;padding:.85rem;font-size:.7rem" onclick="submitBooking()">Confirm Booking →</button>`;
+  openOverlay('confirm-overlay');
+}
+
+async function submitBooking(){
+  if(!pendingBooking)return;
+  try{
+    const res=await POST('/bookings',pendingBooking);
+    closeOverlay('confirm-overlay');
+    // Clear form
+    ['b-name','b-email','b-phone','b-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('b-days').value='1';
+    document.getElementById('b-car').value='';
+    document.getElementById('b-price').textContent='$0.00';
+    // Show success
+    document.getElementById('success-body').innerHTML=`
+      <div class="success-box">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Booking Confirmed!</div>
+        <div class="success-sub">Your reservation for the ${res.car.brand} ${res.car.model} has been placed.<br>Please bring this ID to our desk to collect your keys.</div>
+        <div class="bk-id-display">${res.booking.id}</div>
+        <div class="success-sub" style="margin-top:.5rem">Total: ${fmtCurrency(res.totalPrice)} · ${res.booking.rental_days} day${res.booking.rental_days>1?'s':''}</div>
+        <div class="success-sub" style="margin-top:.8rem;color:var(--muted)">Returns & cancellations are handled by our team at the desk.</div>
+      </div>`;
+    openOverlay('success-overlay');
+    loadCars();
+  }catch(e){toast('Booking Failed',e.message,'error');}
+}
+
+loadCars();
+</script>
+</body>
 </html>

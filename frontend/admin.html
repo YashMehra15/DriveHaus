@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin Login — DriveHaus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=DM+Mono:wght@400;500&family=Syne:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--black:#070707;--off-black:#0e0e0e;--card:#111;--border:#1c1c1c;--dimmed:#7a7a7a;--cream:#ede8d6;--gold:#c8a44a;--gold2:#e6c860;--red:#c44a4a;--font-display:'Cormorant Garamond',serif;--font-mono:'DM Mono',monospace;--font-body:'Syne',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--black);color:var(--cream);font-family:var(--font-body);min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:.18;pointer-events:none}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(200,164,74,.05),transparent 70%);pointer-events:none}
+.login-box{background:var(--card);border:1px solid var(--border);padding:3rem;width:min(420px,92vw);position:relative;z-index:1}
+.login-logo{font-family:var(--font-display);font-size:1.6rem;font-weight:300;letter-spacing:.14em;color:var(--cream);margin-bottom:.3rem;text-align:center}
+.login-logo span{color:var(--gold)}
+.login-sub{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dimmed);text-align:center;margin-bottom:2.5rem}
+.field{margin-bottom:1.2rem}
+.field label{display:block;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmed);margin-bottom:.45rem}
+.field input{width:100%;background:var(--off-black);border:1px solid var(--border);color:var(--cream);padding:.75rem 1rem;outline:none;font-family:var(--font-mono);font-size:.85rem;transition:border-color .2s}
+.field input:focus{border-color:var(--gold)}
+.btn-login{width:100%;padding:1rem;background:var(--gold);color:var(--black);font-family:var(--font-mono);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;font-weight:500;border:none;cursor:pointer;transition:all .2s;margin-top:.5rem}
+.btn-login:hover{background:var(--gold2)}
+.error-msg{background:rgba(196,74,74,.1);border:1px solid rgba(196,74,74,.25);color:#e07070;font-family:var(--font-mono);font-size:.68rem;padding:.7rem 1rem;margin-bottom:1rem;display:none;letter-spacing:.05em}
+.back-link{display:block;text-align:center;margin-top:1.5rem;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmed);text-decoration:none;transition:color .2s}
+.back-link:hover{color:var(--gold)}
+.lock-icon{text-align:center;font-size:2.5rem;margin-bottom:1.5rem;opacity:.6}
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="lock-icon">🔐</div>
+  <div class="login-logo">DRIVE<span>HAUS</span></div>
+  <div class="login-sub">Admin Panel</div>
+  <div class="error-msg" id="error-msg">Invalid username or password</div>
+  <div class="field"><label>Username</label><input id="username" type="text" placeholder="admin" autocomplete="username"/></div>
+  <div class="field"><label>Password</label><input id="password" type="password" placeholder="••••••••" autocomplete="current-password"/></div>
+  <button class="btn-login" onclick="doLogin()">Sign In →</button>
+  <a class="back-link" href="/">← Back to Public Site</a>
+</div>
+<script>
+// If already logged in, redirect
+if(sessionStorage.getItem('dh_admin_token')){window.location.href='/pages/dashboard.html';}
+
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+async function doLogin(){
+  const u=document.getElementById('username').value.trim();
+  const p=document.getElementById('password').value;
+  const errEl=document.getElementById('error-msg');
+  errEl.style.display='none';
+  if(!u||!p){errEl.textContent='Please enter both username and password.';errEl.style.display='block';return;}
+  try{
+    const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Login failed');
+    sessionStorage.setItem('dh_admin_token',data.token);
+    window.location.href='/pages/dashboard.html';
+  }catch(e){
+    errEl.textContent=e.message||'Login failed. Please try again.';
+    errEl.style.display='block';
+    document.getElementById('password').value='';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,35 +1,30 @@
 # 🚗 DriveHaus — Full Stack Vehicle Rental Platform
 
-![React](https://img.shields.io/badge/Frontend-React-blue?logo=react)
-![Node.js](https://img.shields.io/badge/Backend-Node.js-green?logo=node.js)
-![MySQL](https://img.shields.io/badge/Database-MySQL-orange?logo=mysql)
-![Status](https://img.shields.io/badge/Status-Active-success)
-
-DriveHaus is a modern **full-stack vehicle rental platform** that allows users to browse, book, and manage vehicles seamlessly with a clean and responsive interface.
+DriveHaus is a modern **full-stack vehicle rental platform** that allows users to browse, book, and manage vehicles, while admins handle listings and operations.
 
 ---
 
-## ✨ Features
+## 🚀 Features
 
-* 🚗 Browse available vehicles
-* 📅 Book vehicles with date selection
-* 👤 User authentication & authorization
-* 📦 Manage bookings
-* 🧑‍💼 Admin dashboard for vehicle management
-* ☁️ Image upload & storage
-* ⚡ Fast and responsive UI
+* 🔐 User Authentication (Login / Signup)
+* 🚗 Browse Available Vehicles
+* 📅 Book Vehicles with Date Selection
+* 📦 Booking Management System
+* 🧑‍💼 Admin Controls for Vehicle Listings
+* ☁️ Image Upload Support
+* 📱 Responsive & Interactive UI
 
 ---
 
 ## 🛠 Tech Stack
 
-### Frontend
+### Frontend:
 
 * React.js
 * Vite
 * Tailwind CSS
 
-### Backend
+### Backend:
 
 * Node.js
 * Express.js
@@ -39,37 +34,37 @@ DriveHaus is a modern **full-stack vehicle rental platform** that allows users t
 
 ---
 
-## ⚙️ Getting Started
+## ⚙️ How to Run Locally
 
-### 1. Clone the Repository
+### 1️⃣ Clone the Repository
 
-```bash id="r1c8n0"
+```bash id="4hz3jx"
 git clone https://github.com/YashMehra15/DriveHaus.git
 ```
 
 ---
 
-### 2. Navigate to Project
+### 2️⃣ Navigate to Project Folder
 
-```bash id="k8d4z1"
+```bash id="0ayh1g"
 cd DriveHaus
 ```
 
 ---
 
-### 3. Install Dependencies
+### 3️⃣ Install Dependencies
 
-```bash id="b7x0c2"
+```bash id="oq6dfh"
 npm install
 ```
 
 ---
 
-### 4. Configure Environment Variables
+### 4️⃣ Setup Environment Variables
 
-Create `.env` in root:
+Create `.env` file in root:
 
-```env id="z9p3a1"
+```env id="2u6q1m"
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_password
@@ -81,17 +76,17 @@ SECRET_KEY=your_secret_key
 
 ---
 
-### 5. Run the Application
+### 5️⃣ Run Backend
 
-#### Backend
-
-```bash id="m2v5d7"
+```bash id="2rd8p7"
 npm run dev
 ```
 
-#### Frontend
+---
 
-```bash id="n4w8q3"
+### 6️⃣ Run Frontend
+
+```bash id="d55chc"
 cd frontend
 npm install
 npm run dev
@@ -106,18 +101,9 @@ npm run dev
 
 ---
 
-## 🎯 Project Objective
+## 🎯 Project Purpose
 
-This project demonstrates a **real-world full-stack application** with booking logic, authentication, and database integration.
-
----
-
-## 🚀 Future Enhancements
-
-* 💳 Online payment integration
-* 📊 Booking analytics dashboard
-* 🔍 Advanced search & filters
-* 🌐 Deployment with custom domain
+This project demonstrates a **real-world booking system** with authentication, database integration, and full-stack architecture.
 
 ---
 
