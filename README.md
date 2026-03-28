@@ -1,134 +1,132 @@
-# 🚗 DriveHaus — Full Stack Car Rental Management System
+# 🚗 DriveHaus — Full Stack Vehicle Rental Platform
 
-A production-grade car rental platform with a **SQLite database**, **REST API backend**, and a **5-page frontend dashboard**.
+![React](https://img.shields.io/badge/Frontend-React-blue?logo=react)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-green?logo=node.js)
+![MySQL](https://img.shields.io/badge/Database-MySQL-orange?logo=mysql)
+![Status](https://img.shields.io/badge/Status-Active-success)
 
----
-
-## Project Structure
-
-```
-drivehaus/
-├── backend/
-│   ├── server.js       ← Express REST API (all routes)
-│   ├── database.js     ← SQLite schema + seeding
-│   └── package.json
-└── frontend/
-    ├── index.html      ← Redirect to dashboard
-    ├── css/
-    │   └── global.css  ← Shared design system
-    ├── js/
-    │   └── shared.js   ← API client, utilities, SVGs
-    └── pages/
-        ├── dashboard.html  ← Stats, revenue, recent activity
-        ├── fleet.html      ← Car management (CRUD)
-        ├── bookings.html   ← Booking management (rent/return/cancel)
-        ├── customers.html  ← Customer management (CRUD)
-        └── activity.html   ← Full system activity log
-```
+DriveHaus is a modern **full-stack vehicle rental platform** that allows users to browse, book, and manage vehicles seamlessly with a clean and responsive interface.
 
 ---
 
-## Setup & Run
+## ✨ Features
 
-```bash
-# 1. Install dependencies
-cd backend
+* 🚗 Browse available vehicles
+* 📅 Book vehicles with date selection
+* 👤 User authentication & authorization
+* 📦 Manage bookings
+* 🧑‍💼 Admin dashboard for vehicle management
+* ☁️ Image upload & storage
+* ⚡ Fast and responsive UI
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+
+* React.js
+* Vite
+* Tailwind CSS
+
+### Backend
+
+* Node.js
+* Express.js
+* MySQL
+* JWT Authentication
+* Multer
+
+---
+
+## ⚙️ Getting Started
+
+### 1. Clone the Repository
+
+```bash id="r1c8n0"
+git clone https://github.com/YashMehra15/DriveHaus.git
+```
+
+---
+
+### 2. Navigate to Project
+
+```bash id="k8d4z1"
+cd DriveHaus
+```
+
+---
+
+### 3. Install Dependencies
+
+```bash id="b7x0c2"
 npm install
-
-# 2. Start server
-node server.js
-# or for auto-reload:
-npm run dev
-
-# 3. Open in browser
-# http://localhost:3001
 ```
 
-The frontend is served directly by Express — no separate server needed.
+---
+
+### 4. Configure Environment Variables
+
+Create `.env` in root:
+
+```env id="z9p3a1"
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=drivehaus
+
+PORT=3000
+SECRET_KEY=your_secret_key
+```
 
 ---
 
-## Features
+### 5. Run the Application
 
-### Dashboard
-- Live stats: cars, available, active bookings, customers, revenue
-- Recent bookings feed
-- Most booked cars leaderboard
-- Monthly revenue bar chart
-- Activity timeline
+#### Backend
 
-### Fleet Management
-- View all 6 cars with SVG illustrations + full specs
-- Filter by: all, available, rented, sedan, SUV, electric, sports
-- Search by brand/model
-- Add new cars (full form)
-- Edit existing cars
-- Delete cars (protected if actively rented)
-- Full detail modal per car
+```bash id="m2v5d7"
+npm run dev
+```
 
-### Bookings
-- Create new bookings (auto-creates customer if new)
-- Live price calculator
-- View all bookings with filters (active/returned/cancelled)
-- Full booking detail modal
-- Return a rented car
-- Cancel a booking
-- Full booking receipt
+#### Frontend
 
-### Customers
-- View all customers as cards with booking stats
-- Add/edit/delete customers
-- Full profile modal with booking history
-- Protected deletion (can't delete if active bookings exist)
-
-### Activity Log
-- Every system event stored in DB
-- Filterable by event type
-- Timestamps + relative time
-- JSON metadata per event
+```bash id="n4w8q3"
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
-## API Endpoints
+## 🌐 Local Development
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/cars | List all cars |
-| GET | /api/cars/:id | Single car |
-| POST | /api/cars | Add a car |
-| PUT | /api/cars/:id | Update a car |
-| DELETE | /api/cars/:id | Delete a car |
-| GET | /api/customers | All customers (with stats) |
-| GET | /api/customers/:id | Customer + booking history |
-| POST | /api/customers | Add customer |
-| PUT | /api/customers/:id | Update customer |
-| DELETE | /api/customers/:id | Delete customer |
-| GET | /api/bookings | All bookings |
-| GET | /api/bookings/:id | Booking detail |
-| POST | /api/bookings | Create booking (rent) |
-| PATCH | /api/bookings/:id/return | Return a car |
-| PATCH | /api/bookings/:id/cancel | Cancel booking |
-| GET | /api/stats | Dashboard stats |
-| GET | /api/activity | Activity log (last 50) |
+* Frontend → http://localhost:5173
+* Backend → http://localhost:3000
 
 ---
 
-## Database
+## 🎯 Project Objective
 
-SQLite file: `backend/drivehaus.db` (auto-created on first run)
+This project demonstrates a **real-world full-stack application** with booking logic, authentication, and database integration.
 
-### Tables
-- **cars** — Fleet inventory
-- **customers** — Customer registry  
-- **bookings** — All rental transactions
-- **activity_log** — System event log
+---
 
-### Default Cars (seeded automatically)
-| ID | Car | Rate |
-|----|-----|------|
-| C001 | Toyota Camry | $60/day |
-| C002 | Honda Accord | $70/day |
-| C003 | Mahindra Thar | $150/day |
-| C004 | BMW X5 | $200/day |
-| C005 | Tesla Model 3 | $180/day |
-| C006 | Ford Mustang | $220/day |
+## 🚀 Future Enhancements
+
+* 💳 Online payment integration
+* 📊 Booking analytics dashboard
+* 🔍 Advanced search & filters
+* 🌐 Deployment with custom domain
+
+---
+
+## 👨‍💻 Author
+
+**Yash Mehra**
+
+---
+
+## ⭐ Support
+
+If you like this project, give it a ⭐ on GitHub!
