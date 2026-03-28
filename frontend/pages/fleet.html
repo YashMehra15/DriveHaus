@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Fleet — DriveHaus</title>
+<link rel="stylesheet" href="/css/global.css"/>
+<style>
+.fleet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; }
+.car-card { background: var(--card); border: 1px solid var(--border); overflow: hidden; transition: all .25s; animation: fadeUp .4s ease both; }
+.car-card:hover { border-color: var(--gold); box-shadow: 0 12px 40px rgba(0,0,0,.5); transform: translateY(-3px); }
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.car-visual { height: 180px; position: relative; display: flex; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; }
+.car-visual svg { width: 100%; max-width: 270px; height: auto; filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)); position: relative; z-index: 1; transition: transform .3s; }
+.car-card:hover .car-visual svg { transform: scale(1.04); }
+.car-visual::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(to top, var(--card), transparent); z-index: 2; }
+.car-badge { position: absolute; top: .8rem; left: .8rem; z-index: 3; }
+.car-tag { position: absolute; top: .8rem; right: .8rem; z-index: 3; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; text-transform: uppercase; padding: .22rem .6rem; background: rgba(200,164,74,.1); color: var(--gold); border: 1px solid rgba(200,164,74,.2); }
+.car-body { padding: 1.2rem; }
+.car-brand { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: .15rem; }
+.car-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; color: var(--cream); margin-bottom: .2rem; }
+.car-tagline { font-size: .78rem; color: var(--dimmed); font-style: italic; margin-bottom: .9rem; }
+.car-specs-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .9rem; }
+.spec-pill { font-family: var(--font-mono); font-size: .58rem; padding: .25rem .6rem; background: var(--off-black); border: 1px solid var(--border); color: var(--dimmed); }
+.color-dots { display: flex; gap: .4rem; margin-bottom: 1rem; align-items: center; }
+.color-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,.1); }
+.car-footer { display: flex; align-items: center; justify-content: space-between; padding-top: .9rem; border-top: 1px solid var(--border); }
+.car-price { font-family: var(--font-display); font-size: 1.7rem; font-weight: 300; color: var(--cream); }
+.car-price span { font-family: var(--font-mono); font-size: .58rem; color: var(--dimmed); }
+.car-actions { display: flex; gap: .4rem; }
+
+/* Detail Modal */
+.detail-hero { display: grid; grid-template-columns: 1.1fr 1fr; border-bottom: 1px solid var(--border); }
+.detail-visual { padding: 2rem; display: flex; align-items: center; justify-content: center; min-height: 220px; }
+.detail-visual svg { width: 100%; max-width: 320px; height: auto; filter: drop-shadow(0 12px 40px rgba(0,0,0,.7)); }
+.detail-info { padding: 2rem; border-left: 1px solid var(--border); }
+.specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-bottom: 1.5rem; }
+.spec-block { background: var(--off-black); padding: .9rem; border: 1px solid var(--border); }
+.spec-block .sb-icon { font-size: 1.1rem; margin-bottom: .3rem; }
+.spec-block .sb-label { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
+.spec-block .sb-val { font-size: .9rem; color: var(--cream); font-weight: 600; }
+.features-list { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-bottom: 1.2rem; }
+.feature-item { display: flex; gap: .5rem; align-items: center; padding: .4rem .7rem; background: var(--off-black); border: 1px solid var(--border); font-family: var(--font-mono); font-size: .62rem; color: var(--dimmed); }
+.feature-item .fi { color: var(--green); }
+.colors-row { display: flex; gap: .8rem; flex-wrap: wrap; }
+.color-sw { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+.color-sw .cs { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.1); }
+.color-sw .cn { font-family: var(--font-mono); font-size: .52rem; color: var(--muted); text-align: center; max-width: 55px; }
+</style>
+</head>
+<body>
+<div id="sidebar-mount"></div>
+<div class="main-content">
+  <div class="topbar">
+    <div><div class="topbar-title">Fleet Management</div><div class="topbar-sub">All vehicles · Click card for details</div></div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" onclick="openAddCar()">+ Add Car</button>
+    </div>
+  </div>
+  <div class="page">
+    <div class="filters-bar">
+      <input class="search-input" id="search" placeholder="Search cars…" oninput="applyFilter()"/>
+      <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-chip" onclick="setFilter('available',this)">Available</button>
+      <button class="filter-chip" onclick="setFilter('rented',this)">Rented</button>
+      <button class="filter-chip" onclick="setFilter('sedan',this)">Sedan</button>
+      <button class="filter-chip" onclick="setFilter('suv',this)">SUV</button>
+      <button class="filter-chip" onclick="setFilter('electric',this)">Electric</button>
+      <button class="filter-chip" onclick="setFilter('sports',this)">Sports</button>
+    </div>
+    <div class="fleet-grid" id="fleet-grid"><div style="padding:4rem;text-align:center;color:var(--muted)">Loading fleet…</div></div>
+  </div>
+</div>
+
+<!-- Car Detail Modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal modal-lg"><div id="detail-content"></div></div>
+</div>
+
+<!-- Add/Edit Car Modal -->
+<div class="modal-overlay" id="car-form-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="car-form-title">Add New Car</div>
+      <button class="modal-close" onclick="closeModal('car-form-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Brand</label><input id="cf-brand" placeholder="e.g. Toyota"/></div>
+        <div class="field"><label>Model</label><input id="cf-model" placeholder="e.g. Camry"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Year</label><input id="cf-year" type="number" placeholder="2024"/></div>
+        <div class="field"><label>Category</label>
+          <select id="cf-category"><option value="sedan">Sedan</option><option value="suv">SUV</option><option value="electric">Electric</option><option value="sports">Sports</option><option value="hatchback">Hatchback</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Price Per Day ($)</label><input id="cf-price" type="number" placeholder="60"/></div>
+        <div class="field"><label>Seats</label><input id="cf-seats" type="number" placeholder="5"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Fuel Type</label>
+          <select id="cf-fuel"><option>Petrol</option><option>Diesel</option><option>Electric</option><option>Hybrid</option></select>
+        </div>
+        <div class="field"><label>Transmission</label>
+          <select id="cf-trans"><option>Automatic</option><option>Manual</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Engine</label><input id="cf-engine" placeholder="e.g. 2.0L Turbo"/></div>
+        <div class="field"><label>Power</label><input id="cf-power" placeholder="e.g. 200 hp"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Torque</label><input id="cf-torque" placeholder="e.g. 300 Nm"/></div>
+        <div class="field"><label>Top Speed</label><input id="cf-topspeed" placeholder="e.g. 220 km/h"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>0-100 km/h</label><input id="cf-accel" placeholder="e.g. 7.5s"/></div>
+        <div class="field"><label>Mileage</label><input id="cf-mileage" placeholder="e.g. 14 km/L"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Luggage</label><input id="cf-luggage" placeholder="e.g. 400 L"/></div>
+        <div class="field"></div>
+      </div>
+      <div class="field"><label>Tagline</label><input id="cf-tagline" placeholder="A short, punchy description"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('car-form-modal')">Cancel</button>
+      <button class="btn btn-gold" id="car-form-submit" onclick="submitCarForm()">Add Car</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/shared.js"></script>
+<script>
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('fleet');
+
+let allCars = [], filterMode = 'all', editingCarId = null;
+
+async function loadFleet() {
+  try {
+    allCars = await GET('/cars');
+    applyFilter();
+  } catch(e) { toast('Error', 'Could not load fleet', 'error'); }
+}
+
+function setFilter(f, btn) {
+  filterMode = f;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function applyFilter() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let cars = allCars;
+  if (filterMode === 'available') cars = cars.filter(c => c.isAvailable);
+  else if (filterMode === 'rented') cars = cars.filter(c => !c.isAvailable);
+  else if (filterMode !== 'all') cars = cars.filter(c => c.category === filterMode);
+  if (q) cars = cars.filter(c => `${c.brand} ${c.model} ${c.category}`.toLowerCase().includes(q));
+  renderGrid(cars);
+}
+
+function renderGrid(cars) {
+  const g = document.getElementById('fleet-grid');
+  if (!cars.length) { g.innerHTML = '<div class="empty-state"><div class="empty-icon">🚗</div><div class="empty-title">No cars found</div></div>'; return; }
+  g.innerHTML = cars.map((c, i) => {
+    const tags = Array.isArray(c.tags) ? c.tags : JSON.parse(c.tags || '[]');
+    const colors = Array.isArray(c.colors) ? c.colors : JSON.parse(c.colors || '[]');
+    return `
+    <div class="car-card" style="animation-delay:${i*.06}s">
+      <div class="car-visual" style="background:${c.bgGradient||c.bg_gradient}">
+        ${carSVG(c)}
+        <div class="car-badge">${availBadge(c.isAvailable)}</div>
+        ${tags[0]?`<div class="car-tag">${tags[0]}</div>`:''}
+      </div>
+      <div class="car-body">
+        <div class="car-brand">${c.brand} · ${c.year}</div>
+        <div class="car-name">${c.model}</div>
+        <div class="car-tagline">${c.tagline||''}</div>
+        <div class="car-specs-row">
+          <div class="spec-pill">👥 ${c.seats}S</div>
+          <div class="spec-pill">⛽ ${c.fuel}</div>
+          <div class="spec-pill">⚙️ ${c.transmission}</div>
+          <div class="spec-pill">🏎 ${c.power}</div>
+          <div class="spec-pill">⚡ ${c.acceleration}</div>
+        </div>
+        <div class="color-dots">
+          ${colors.slice(0,4).map(col=>`<div class="color-dot" style="background:${col.hex}" title="${col.name}"></div>`).join('')}
+          <span style="font-family:var(--font-mono);font-size:.58rem;color:var(--muted);margin-left:.2rem">${colors.length} colors</span>
+        </div>
+        <div class="car-footer">
+          <div class="car-price">$${c.price_per_day||c.pricePerDay} <span>/ day</span></div>
+          <div class="car-actions">
+            <button class="btn btn-outline btn-xs" onclick="openDetail('${c.id}')">Details</button>
+            <button class="btn btn-outline btn-xs" onclick="openEditCar('${c.id}')">Edit</button>
+            <button class="btn btn-red btn-xs" onclick="deleteCar('${c.id}','${c.brand} ${c.model}')">Del</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDetail(id) {
+  const c = allCars.find(x => x.id === id); if (!c) return;
+  const tags = Array.isArray(c.tags) ? c.tags : JSON.parse(c.tags || '[]');
+  const colors = Array.isArray(c.colors) ? c.colors : JSON.parse(c.colors || '[]');
+  const features = Array.isArray(c.features) ? c.features : JSON.parse(c.features || '[]');
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-visual" style="background:${c.bgGradient||c.bg_gradient}">${carSVG(c)}</div>
+      <div class="detail-info">
+        <div style="margin-bottom:.3rem">${availBadge(c.isAvailable)}</div>
+        <div style="font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem">${c.brand} · ${c.year} · ${c.id}</div>
+        <div style="font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--cream);margin-bottom:.2rem">${c.model}</div>
+        <div style="font-size:.82rem;color:var(--dimmed);font-style:italic;margin-bottom:1.2rem">${c.tagline||''}</div>
+        <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+          <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:300;color:var(--gold);line-height:1">$${c.price_per_day||c.pricePerDay}</div>
+          <div style="font-family:var(--font-mono);font-size:.62rem;color:var(--dimmed);margin-bottom:.3rem">/day</div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">${tags.map(t=>`<span class="badge badge-gold">${t}</span>`).join('')}</div>
+        <div class="colors-row">${colors.map(col=>`<div class="color-sw"><div class="cs" style="background:${col.hex}"></div><div class="cn">${col.name}</div></div>`).join('')}</div>
+      </div>
+    </div>
+    <div style="padding:1.5rem">
+      <div style="font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Full Specifications</div>
+      <div class="specs-grid">
+        <div class="spec-block"><div class="sb-icon">🔧</div><div class="sb-label">Engine</div><div class="sb-val">${c.engine}</div></div>
+        <div class="spec-block"><div class="sb-icon">💪</div><div class="sb-label">Power</div><div class="sb-val">${c.power}</div></div>
+        <div class="spec-block"><div class="sb-icon">🔩</div><div class="sb-label">Torque</div><div class="sb-val">${c.torque}</div></div>
+        <div class="spec-block"><div class="sb-icon">⚡</div><div class="sb-label">0-100 km/h</div><div class="sb-val">${c.acceleration}</div></div>
+        <div class="spec-block"><div class="sb-icon">🏁</div><div class="sb-label">Top Speed</div><div class="sb-val">${c.top_speed||c.topSpeed}</div></div>
+        <div class="spec-block"><div class="sb-icon">⛽</div><div class="sb-label">Fuel</div><div class="sb-val">${c.fuel}</div></div>
+        <div class="spec-block"><div class="sb-icon">🗺</div><div class="sb-label">Mileage</div><div class="sb-val">${c.mileage}</div></div>
+        <div class="spec-block"><div class="sb-icon">⚙️</div><div class="sb-label">Gearbox</div><div class="sb-val">${c.transmission}</div></div>
+        <div class="spec-block"><div class="sb-icon">👥</div><div class="sb-label">Seats</div><div class="sb-val">${c.seats}</div></div>
+        <div class="spec-block"><div class="sb-icon">🧳</div><div class="sb-label">Boot</div><div class="sb-val">${c.luggage}</div></div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem">Features & Technology</div>
+      <div class="features-list">${features.map(f=>`<div class="feature-item"><span class="fi">✓</span>${f}</div>`).join('')}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('detail-modal')">Close</button>
+      ${c.isAvailable?`<button class="btn btn-gold" onclick="closeModal('detail-modal');window.location='/pages/bookings.html'">Rent This Car →</button>`:'<button class="btn btn-outline" disabled>Currently Rented</button>'}
+    </div>`;
+  openModal('detail-modal');
+}
+
+function openAddCar() {
+  editingCarId = null;
+  document.getElementById('car-form-title').textContent = 'Add New Car';
+  document.getElementById('car-form-submit').textContent = 'Add Car';
+  ['brand','model','year','price','seats','engine','power','torque','topspeed','accel','mileage','luggage','tagline'].forEach(f => {
+    const el = document.getElementById('cf-' + f);
+    if (el) el.value = '';
+  });
+  openModal('car-form-modal');
+}
+
+function openEditCar(id) {
+  const c = allCars.find(x => x.id === id); if (!c) return;
+  editingCarId = id;
+  document.getElementById('car-form-title').textContent = 'Edit Car';
+  document.getElementById('car-form-submit').textContent = 'Save Changes';
+  document.getElementById('cf-brand').value = c.brand;
+  document.getElementById('cf-model').value = c.model;
+  document.getElementById('cf-year').value = c.year;
+  document.getElementById('cf-price').value = c.price_per_day || c.pricePerDay;
+  document.getElementById('cf-seats').value = c.seats;
+  document.getElementById('cf-engine').value = c.engine;
+  document.getElementById('cf-power').value = c.power;
+  document.getElementById('cf-torque').value = c.torque;
+  document.getElementById('cf-topspeed').value = c.top_speed || c.topSpeed;
+  document.getElementById('cf-accel').value = c.acceleration;
+  document.getElementById('cf-mileage').value = c.mileage;
+  document.getElementById('cf-luggage').value = c.luggage;
+  document.getElementById('cf-tagline').value = c.tagline;
+  document.getElementById('cf-fuel').value = c.fuel;
+  document.getElementById('cf-trans').value = c.transmission;
+  document.getElementById('cf-category').value = c.category;
+  openModal('car-form-modal');
+}
+
+async function submitCarForm() {
+  const body = {
+    brand: document.getElementById('cf-brand').value.trim(),
+    model: document.getElementById('cf-model').value.trim(),
+    year: +document.getElementById('cf-year').value || 2024,
+    category: document.getElementById('cf-category').value,
+    pricePerDay: +document.getElementById('cf-price').value,
+    seats: +document.getElementById('cf-seats').value || 5,
+    fuel: document.getElementById('cf-fuel').value,
+    transmission: document.getElementById('cf-trans').value,
+    engine: document.getElementById('cf-engine').value.trim() || 'N/A',
+    power: document.getElementById('cf-power').value.trim() || 'N/A',
+    torque: document.getElementById('cf-torque').value.trim() || 'N/A',
+    topSpeed: document.getElementById('cf-topspeed').value.trim() || 'N/A',
+    acceleration: document.getElementById('cf-accel').value.trim() || 'N/A',
+    mileage: document.getElementById('cf-mileage').value.trim() || 'N/A',
+    luggage: document.getElementById('cf-luggage').value.trim() || 'N/A',
+    tagline: document.getElementById('cf-tagline').value.trim(),
+    bgGradient: 'linear-gradient(135deg,#1a1a2e 0%,#0f3460 100%)',
+    accentColor: '#c9a84c', svgColor: '#aaa',
+  };
+  if (!body.brand || !body.model || !body.pricePerDay) { toast('Validation', 'Brand, model and price are required', 'error'); return; }
+  try {
+    if (editingCarId) {
+      await PUT('/cars/' + editingCarId, body);
+      toast('Car Updated', `${body.brand} ${body.model} updated`);
+    } else {
+      await POST('/cars', body);
+      toast('Car Added', `${body.brand} ${body.model} added to fleet`);
+    }
+    closeModal('car-form-modal');
+    loadFleet();
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+async function deleteCar(id, name) {
+  if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+  try {
+    await DELETE('/cars/' + id);
+    toast('Car Deleted', name + ' removed from fleet');
+    loadFleet();
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+loadFleet();
+</script>
+</body>
+</html>

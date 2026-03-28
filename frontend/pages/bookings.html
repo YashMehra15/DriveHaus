@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bookings — DriveHaus</title>
+<link rel="stylesheet" href="/css/global.css"/>
+<style>
+.booking-id { font-family: var(--font-mono); font-size: .68rem; color: var(--gold); letter-spacing: .06em; }
+.price-preview-box { background: var(--off-black); border: 1px solid var(--border); padding: 1.1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+.price-preview-box .lbl { font-family: var(--font-mono); font-size: .63rem; color: var(--dimmed); }
+.price-preview-box .val { font-family: var(--font-display); font-size: 2rem; color: var(--gold); }
+.receipt-line { display: flex; justify-content: space-between; padding: .65rem 0; border-bottom: 1px solid var(--border); font-size: .87rem; }
+.receipt-line:last-child { border-bottom: none; }
+.receipt-line .k { color: var(--dimmed); }
+.receipt-line .v { font-family: var(--font-mono); font-size: .74rem; color: var(--cream); }
+.receipt-total { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--off-black); border: 1px solid var(--border); margin-top: .8rem; }
+.receipt-total .k { font-family: var(--font-mono); font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--dimmed); }
+.receipt-total .v { font-family: var(--font-display); font-size: 1.9rem; color: var(--gold); }
+</style>
+</head>
+<body>
+<div id="sidebar-mount"></div>
+<div class="main-content">
+  <div class="topbar">
+    <div><div class="topbar-title">Bookings</div><div class="topbar-sub">Manage all rental bookings</div></div>
+    <div class="topbar-actions">
+      <button class="btn btn-gold" onclick="openNewBooking()">+ New Booking</button>
+    </div>
+  </div>
+  <div class="page">
+    <div class="filters-bar">
+      <input class="search-input" id="bk-search" placeholder="Search by customer, car, ID…" oninput="applyFilter()"/>
+      <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-chip" onclick="setFilter('active',this)">Active</button>
+      <button class="filter-chip" onclick="setFilter('returned',this)">Returned</button>
+      <button class="filter-chip" onclick="setFilter('cancelled',this)">Cancelled</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr>
+          <th>Booking ID</th><th>Customer</th><th>Vehicle</th><th>Days</th>
+          <th>Total</th><th>Status</th><th>Rented</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="bookings-tbody"><tr><td colspan="8"><div style="text-align:center;padding:3rem;color:var(--muted)">Loading…</div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- New Booking Modal -->
+<div class="modal-overlay" id="new-booking-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Booking</div>
+      <button class="modal-close" onclick="closeModal('new-booking-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Customer Full Name *</label><input id="nb-name" placeholder="e.g. Ravi Sharma"/></div>
+      <div class="field-row">
+        <div class="field"><label>Email</label><input id="nb-email" type="email" placeholder="optional"/></div>
+        <div class="field"><label>Phone</label><input id="nb-phone" placeholder="optional"/></div>
+      </div>
+      <div class="field"><label>Select Vehicle *</label>
+        <select id="nb-car" onchange="updatePricePreview()"><option value="">— Choose an available car —</option></select>
+      </div>
+      <div class="field"><label>Rental Days *</label>
+        <input id="nb-days" type="number" min="1" max="365" value="1" oninput="updatePricePreview()"/>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="nb-notes" placeholder="Any special requirements…"></textarea></div>
+      <div class="price-preview-box"><span class="lbl">Estimated Total</span><span class="val" id="nb-price">$0.00</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('new-booking-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="submitBooking()">Confirm Booking →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Booking Detail Modal -->
+<div class="modal-overlay" id="booking-detail-modal">
+  <div class="modal"><div id="booking-detail-content"></div></div>
+</div>
+
+<!-- Confirm Return Modal -->
+<div class="modal-overlay" id="return-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Confirm Return</div>
+      <button class="modal-close" onclick="closeModal('return-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="return-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('return-modal')">Cancel</button>
+      <button class="btn btn-green" id="return-confirm-btn">Confirm Return</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/shared.js"></script>
+<script>
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('bookings');
+
+let allBookings = [], allCars = [], filterMode = 'all';
+
+async function load() {
+  try {
+    [allBookings, allCars] = await Promise.all([GET('/bookings'), GET('/cars?available=true')]);
+    populateCarSelect();
+    applyFilter();
+  } catch(e) { toast('Error', 'Could not load bookings', 'error'); }
+}
+
+function populateCarSelect() {
+  const sel = document.getElementById('nb-car');
+  sel.innerHTML = '<option value="">— Choose an available car —</option>' +
+    allCars.map(c => `<option value="${c.id}" data-price="${c.price_per_day||c.pricePerDay}">${c.brand} ${c.model} (${c.id}) — $${c.price_per_day||c.pricePerDay}/day</option>`).join('');
+}
+
+function updatePricePreview() {
+  const sel = document.getElementById('nb-car');
+  const days = +document.getElementById('nb-days').value || 0;
+  const price = sel.selectedOptions[0] ? +sel.selectedOptions[0].dataset.price || 0 : 0;
+  document.getElementById('nb-price').textContent = fmtCurrency(price * days);
+}
+
+function setFilter(f, btn) {
+  filterMode = f;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function applyFilter() {
+  const q = document.getElementById('bk-search').value.toLowerCase();
+  let rows = allBookings;
+  if (filterMode !== 'all') rows = rows.filter(b => b.status === filterMode);
+  if (q) rows = rows.filter(b => `${b.id} ${b.customer_name} ${b.brand} ${b.model}`.toLowerCase().includes(q));
+  renderTable(rows);
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById('bookings-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No bookings found</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(b => `
+    <tr>
+      <td><span class="booking-id">${b.id}</span></td>
+      <td>
+        <span class="cell-main">${b.customer_name}</span>
+        <span class="cell-sub">${b.customer_email||b.customer_phone||'—'}</span>
+      </td>
+      <td>
+        <span class="cell-main">${b.brand} ${b.model}</span>
+        <span class="cell-sub">${b.car_id} · ${b.category||''}</span>
+      </td>
+      <td class="cell-mono">${b.rental_days}d</td>
+      <td style="color:var(--gold);font-family:var(--font-display);font-size:1.1rem">${fmtCurrency(b.total_price)}</td>
+      <td>${statusBadge(b.status)}</td>
+      <td class="cell-mono" style="font-size:.65rem">${fmtDateTime(b.rented_at)}</td>
+      <td>
+        <div style="display:flex;gap:.3rem;flex-wrap:wrap">
+          <button class="btn btn-outline btn-xs" onclick="openDetail('${b.id}')">View</button>
+          ${b.status==='active'?`
+            <button class="btn btn-green btn-xs" onclick="openReturn('${b.id}')">Return</button>
+            <button class="btn btn-red btn-xs" onclick="cancelBooking('${b.id}')">Cancel</button>
+          `:''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openNewBooking() {
+  ['nb-name','nb-email','nb-phone','nb-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nb-days').value = '1';
+  document.getElementById('nb-car').value = '';
+  document.getElementById('nb-price').textContent = '$0.00';
+  openModal('new-booking-modal');
+}
+
+async function submitBooking() {
+  const name  = document.getElementById('nb-name').value.trim();
+  const carId = document.getElementById('nb-car').value;
+  const days  = +document.getElementById('nb-days').value;
+  if (!name || !carId || !days || days < 1) { toast('Validation', 'All required fields must be filled', 'error'); return; }
+  try {
+    const res = await POST('/bookings', {
+      customerName:  name,
+      customerEmail: document.getElementById('nb-email').value.trim() || undefined,
+      customerPhone: document.getElementById('nb-phone').value.trim() || undefined,
+      carId, rentalDays: days,
+      notes: document.getElementById('nb-notes').value.trim() || undefined,
+    });
+    closeModal('new-booking-modal');
+    toast('Booking Confirmed! 🎉', `${res.car.brand} ${res.car.model} booked for ${days} days · ${fmtCurrency(res.totalPrice)}`);
+    load();
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+async function openDetail(id) {
+  try {
+    const b = await GET('/bookings/' + id);
+    document.getElementById('booking-detail-content').innerHTML = `
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Booking Details</div>
+          <div class="booking-id">${b.id}</div>
+        </div>
+        <button class="modal-close" onclick="closeModal('booking-detail-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:1.2rem">${statusBadge(b.status)}</div>
+        <div class="receipt-line"><span class="k">Customer</span><span class="v">${b.customer_name}</span></div>
+        <div class="receipt-line"><span class="k">Email</span><span class="v">${b.customer_email||'—'}</span></div>
+        <div class="receipt-line"><span class="k">Phone</span><span class="v">${b.customer_phone||'—'}</span></div>
+        <hr class="divider"/>
+        <div class="receipt-line"><span class="k">Vehicle</span><span class="v">${b.brand} ${b.model} (${b.year})</span></div>
+        <div class="receipt-line"><span class="k">Car ID</span><span class="v">${b.car_id}</span></div>
+        <div class="receipt-line"><span class="k">Engine</span><span class="v">${b.engine}</span></div>
+        <div class="receipt-line"><span class="k">Fuel</span><span class="v">${b.fuel}</span></div>
+        <div class="receipt-line"><span class="k">Transmission</span><span class="v">${b.transmission}</span></div>
+        <hr class="divider"/>
+        <div class="receipt-line"><span class="k">Rental Days</span><span class="v">${b.rental_days} day${b.rental_days!==1?'s':''}</span></div>
+        <div class="receipt-line"><span class="k">Rate</span><span class="v">${fmtCurrency(b.price_per_day)}/day</span></div>
+        <div class="receipt-line"><span class="k">Rented At</span><span class="v">${fmtDateTime(b.rented_at)}</span></div>
+        <div class="receipt-line"><span class="k">Returned At</span><span class="v">${b.returned_at?fmtDateTime(b.returned_at):'—'}</span></div>
+        ${b.notes?`<div class="receipt-line"><span class="k">Notes</span><span class="v">${b.notes}</span></div>`:''}
+        <div class="receipt-total"><span class="k">Total</span><span class="v">${fmtCurrency(b.total_price)}</span></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('booking-detail-modal')">Close</button>
+        ${b.status==='active'?`
+          <button class="btn btn-green" onclick="closeModal('booking-detail-modal');openReturn('${b.id}')">Return Car</button>
+          <button class="btn btn-red" onclick="closeModal('booking-detail-modal');cancelBooking('${b.id}')">Cancel</button>
+        `:''}
+      </div>`;
+    openModal('booking-detail-modal');
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+function openReturn(id) {
+  const b = allBookings.find(x => x.id === id); if (!b) return;
+  document.getElementById('return-modal-body').innerHTML = `
+    <div class="receipt-line"><span class="k">Booking</span><span class="v">${b.id}</span></div>
+    <div class="receipt-line"><span class="k">Customer</span><span class="v">${b.customer_name}</span></div>
+    <div class="receipt-line"><span class="k">Vehicle</span><span class="v">${b.brand} ${b.model}</span></div>
+    <div class="receipt-line"><span class="k">Duration</span><span class="v">${b.rental_days} days</span></div>
+    <div class="receipt-total"><span class="k">Total Charge</span><span class="v">${fmtCurrency(b.total_price)}</span></div>`;
+  document.getElementById('return-confirm-btn').onclick = () => confirmReturn(id);
+  openModal('return-modal');
+}
+
+async function confirmReturn(id) {
+  try {
+    const res = await PATCH('/bookings/' + id + '/return');
+    closeModal('return-modal');
+    toast('Car Returned ✓', res.message);
+    load();
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+async function cancelBooking(id) {
+  if (!confirm('Cancel this booking? The car will be made available again.')) return;
+  try {
+    await PATCH('/bookings/' + id + '/cancel');
+    toast('Booking Cancelled', 'Booking has been cancelled');
+    load();
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+load();
+</script>
+</body>
+</html>

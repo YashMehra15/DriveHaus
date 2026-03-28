@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard — DriveHaus</title>
+<link rel="stylesheet" href="/css/global.css"/>
+<style>
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+.recent-row { display: flex; align-items: center; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+.recent-row:last-child { border-bottom: none; }
+.recent-car { font-family: var(--font-display); font-size: 1.1rem; color: var(--cream); }
+.recent-meta { font-family: var(--font-mono); font-size: .6rem; color: var(--muted); margin-top: .1rem; display:flex; align-items:center; gap:.5rem; }
+.recent-price { font-family: var(--font-display); font-size: 1.3rem; color: var(--gold); margin-left: auto; white-space: nowrap; }
+.top-car-row { display: flex; align-items: center; gap: 1rem; padding: .7rem 0; border-bottom: 1px solid var(--border); }
+.top-car-row:last-child { border-bottom: none; }
+.top-rank { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; color: var(--muted); width: 28px; flex-shrink: 0; line-height:1; }
+.top-rank.gold { color: var(--gold); }
+.top-name { font-family: var(--font-mono); font-size: .72rem; color: var(--cream); }
+.top-count { font-family: var(--font-mono); font-size: .62rem; color: var(--muted); margin-top:.15rem; }
+.top-rev { font-family: var(--font-display); font-size: 1.1rem; color: var(--gold); margin-left: auto; }
+.activity-row { display: flex; gap: .8rem; padding: .65rem 0; border-bottom: 1px solid rgba(28,28,28,.6); align-items: flex-start; }
+.activity-row:last-child { border-bottom: none; }
+.activity-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: .5rem; }
+.activity-msg { font-size: .82rem; color: var(--dimmed); flex: 1; line-height:1.4; }
+.activity-time { font-family: var(--font-mono); font-size: .58rem; color: var(--muted); white-space: nowrap; margin-top:.1rem; }
+.rev-bar-row { margin-bottom: .9rem; }
+.rev-bar-header { display:flex; justify-content:space-between; margin-bottom:.3rem; }
+.rev-bar-month { font-family: var(--font-mono); font-size: .65rem; color: var(--dimmed); }
+.rev-bar-amount { font-family: var(--font-display); font-size: 1rem; color: var(--gold); }
+.rev-bar-track { height: 5px; background: var(--border); border-radius: 3px; }
+.rev-bar-fill { height: 5px; background: var(--gold); border-radius: 3px; transition: width .6s ease; }
+.rev-bar-sub { font-family: var(--font-mono); font-size: .58rem; color: var(--muted); margin-top: .25rem; }
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: 2rem; }
+.qa-btn {
+  display: flex; align-items: center; gap: .8rem; padding: 1.1rem;
+  background: var(--off-black); border: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: .68rem; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--dimmed); transition: all .2s; text-decoration:none;
+}
+.qa-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.qa-icon { font-size: 1.3rem; }
+.loading-pulse { text-align:center; padding:2rem; color:var(--muted); font-family:var(--font-mono); font-size:.7rem; letter-spacing:.1em; }
+</style>
+</head>
+<body>
+<div id="sidebar-mount"></div>
+<div class="main-content">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Dashboard</div>
+      <div class="topbar-sub" id="dash-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" onclick="loadDashboard()">↻ Refresh</button>
+      <a href="/pages/bookings.html" class="btn btn-gold">+ New Booking</a>
+    </div>
+  </div>
+  <div class="page">
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">🚗</div><div class="stat-label">Total Cars</div><div class="stat-value" id="s-total-cars">—</div><div class="stat-sub">In fleet</div></div>
+      <div class="stat-card"><div class="stat-icon">✓</div><div class="stat-label">Available Now</div><div class="stat-value green" id="s-avail">—</div><div class="stat-sub">Ready to rent</div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-label">Active Bookings</div><div class="stat-value gold" id="s-active">—</div><div class="stat-sub">On the road</div></div>
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Customers</div><div class="stat-value" id="s-customers">—</div><div class="stat-sub">Registered</div></div>
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Revenue</div><div class="stat-value gold" id="s-revenue">—</div><div class="stat-sub">From returned bookings</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-label">Pending Revenue</div><div class="stat-value" id="s-pending">—</div><div class="stat-sub">From active bookings</div></div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-head" style="margin-top:2rem"><div><div class="section-label">Quick Actions</div></div></div>
+    <div class="quick-actions">
+      <a class="qa-btn" href="/pages/bookings.html"><span class="qa-icon">📋</span> New Booking</a>
+      <a class="qa-btn" href="/pages/fleet.html"><span class="qa-icon">🚗</span> Manage Fleet</a>
+      <a class="qa-btn" href="/pages/customers.html"><span class="qa-icon">👥</span> View Customers</a>
+      <a class="qa-btn" href="/pages/activity.html"><span class="qa-icon">⚡</span> Activity Log</a>
+    </div>
+
+    <!-- Row 1: Recent Bookings + Top Cars -->
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title">Recent Bookings</div>
+        <div id="recent-bookings"><div class="loading-pulse">Loading…</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Most Booked Cars</div>
+        <div id="top-cars"><div class="loading-pulse">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- Row 2: Activity + Revenue -->
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title">Recent Activity</div>
+        <div id="activity-list"><div class="loading-pulse">Loading…</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Revenue by Month</div>
+        <div id="revenue-list"><div class="loading-pulse">Loading…</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/shared.js"></script>
+<script>
+// Inject sidebar and set active state
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('dashboard');
+
+// Set date
+document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-IN', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+});
+
+async function loadDashboard() {
+  try {
+    // Load stats and activity in parallel
+    const [s, activityLog] = await Promise.all([
+      GET('/stats'),
+      GET('/activity')
+    ]);
+
+    // ── Stat Cards ──────────────────────────────────────────────────────────
+    document.getElementById('s-total-cars').textContent = s.totalCars;
+    document.getElementById('s-avail').textContent      = s.availableCars;
+    document.getElementById('s-active').textContent     = s.activeBookings;
+    document.getElementById('s-customers').textContent  = s.totalCustomers;
+    document.getElementById('s-revenue').textContent    = fmtCurrency(s.totalRevenue);
+    document.getElementById('s-pending').textContent    = fmtCurrency(s.pendingRevenue);
+
+    // ── Recent Bookings ─────────────────────────────────────────────────────
+    const rb = document.getElementById('recent-bookings');
+    if (!s.recentBookings || !s.recentBookings.length) {
+      rb.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-sub">No bookings yet — <a href="/pages/bookings.html" style="color:var(--gold)">create one</a></div>
+      </div>`;
+    } else {
+      rb.innerHTML = s.recentBookings.map(b => `
+        <div class="recent-row">
+          <div style="flex:1;min-width:0">
+            <div class="recent-car">${b.brand} ${b.model}</div>
+            <div class="recent-meta">
+              <span>${b.customer_name}</span>
+              <span>·</span>
+              <span>${b.rental_days}d</span>
+              <span>·</span>
+              ${statusBadge(b.status)}
+            </div>
+          </div>
+          <div class="recent-price">${fmtCurrency(b.total_price)}</div>
+        </div>`).join('');
+    }
+
+    // ── Top Cars ────────────────────────────────────────────────────────────
+    const tc = document.getElementById('top-cars');
+    if (!s.topCars || !s.topCars.length) {
+      tc.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">🚗</div>
+        <div class="empty-sub">Rent cars to see rankings</div>
+      </div>`;
+    } else {
+      tc.innerHTML = s.topCars.map((c, i) => `
+        <div class="top-car-row">
+          <div class="top-rank ${i === 0 ? 'gold' : ''}">${i + 1}</div>
+          <div>
+            <div class="top-name">${c.brand} ${c.model}</div>
+            <div class="top-count">${c.bookings} booking${c.bookings !== 1 ? 's' : ''}</div>
+          </div>
+          <div class="top-rev">${fmtCurrency(c.revenue)}</div>
+        </div>`).join('');
+    }
+
+    // ── Activity Log ────────────────────────────────────────────────────────
+    const actEl = document.getElementById('activity-list');
+    if (!activityLog || !activityLog.length) {
+      actEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-sub">No activity yet</div></div>`;
+    } else {
+      actEl.innerHTML = activityLog.slice(0, 8).map(a => `
+        <div class="activity-row">
+          <div class="activity-dot"></div>
+          <div class="activity-msg">${a.message}</div>
+          <div class="activity-time">${timeSince(a.created_at)}</div>
+        </div>`).join('');
+    }
+
+    // ── Revenue by Month ────────────────────────────────────────────────────
+    const rm = document.getElementById('revenue-list');
+    if (!s.revenueByMonth || !s.revenueByMonth.length) {
+      rm.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">💰</div>
+        <div class="empty-sub">Revenue data appears once bookings are returned</div>
+      </div>`;
+    } else {
+      const maxRev = Math.max(...s.revenueByMonth.map(r => r.revenue), 1);
+      rm.innerHTML = s.revenueByMonth.map(r => {
+        const pct = Math.max(5, Math.round((r.revenue / maxRev) * 100));
+        return `<div class="rev-bar-row">
+          <div class="rev-bar-header">
+            <span class="rev-bar-month">${r.month}</span>
+            <span class="rev-bar-amount">${fmtCurrency(r.revenue)}</span>
+          </div>
+          <div class="rev-bar-track">
+            <div class="rev-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="rev-bar-sub">${r.count} booking${r.count !== 1 ? 's' : ''}</div>
+        </div>`;
+      }).join('');
+    }
+
+  } catch (e) {
+    console.error('Dashboard load error:', e);
+    toast('Connection Error', 'Cannot reach backend. Make sure the server is running on port 3001.', 'error');
+
+    // Show offline state in all panels
+    ['recent-bookings', 'top-cars', 'activity-list', 'revenue-list'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-sub">Server offline</div>
+      </div>`;
+    });
+    ['s-total-cars','s-avail','s-active','s-customers','s-revenue','s-pending'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+  }
+}
+
+// Load on page ready, then refresh every 30s
+loadDashboard();
+setInterval(loadDashboard, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Customers — DriveHaus</title>
+<link rel="stylesheet" href="/css/global.css"/>
+<style>
+.customer-card { background: var(--card); border: 1px solid var(--border); padding: 1.4rem; transition: all .2s; cursor: pointer; }
+.customer-card:hover { border-color: var(--gold); }
+.customer-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--gold-dim); border: 1px solid rgba(200,164,74,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 1.3rem; color: var(--gold);
+  flex-shrink: 0;
+}
+.customer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 1px; }
+.booking-mini { display: flex; justify-content: space-between; align-items: center; padding: .5rem 0; border-bottom: 1px solid rgba(28,28,28,.5); font-size: .82rem; }
+.booking-mini:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div id="sidebar-mount"></div>
+<div class="main-content">
+  <div class="topbar">
+    <div><div class="topbar-title">Customers</div><div class="topbar-sub">All registered customers</div></div>
+    <div class="topbar-actions">
+      <button class="btn btn-gold" onclick="openAddCustomer()">+ Add Customer</button>
+    </div>
+  </div>
+  <div class="page">
+    <div class="filters-bar">
+      <input class="search-input" id="cust-search" placeholder="Search by name, email, phone…" oninput="applyFilter()"/>
+    </div>
+    <div class="customer-grid" id="customer-grid"><div style="padding:4rem;text-align:center;color:var(--muted)">Loading…</div></div>
+  </div>
+</div>
+
+<!-- Add/Edit Customer -->
+<div class="modal-overlay" id="cust-form-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="cf-title">Add Customer</div>
+      <button class="modal-close" onclick="closeModal('cust-form-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Full Name *</label><input id="cust-name" placeholder="e.g. Ravi Sharma"/></div>
+      <div class="field"><label>Email</label><input id="cust-email" type="email" placeholder="customer@email.com"/></div>
+      <div class="field"><label>Phone</label><input id="cust-phone" placeholder="+91 98765 43210"/></div>
+      <div class="field"><label>Address</label><textarea id="cust-addr" placeholder="Full address (optional)"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('cust-form-modal')">Cancel</button>
+      <button class="btn btn-gold" id="cust-submit-btn" onclick="submitCustomer()">Add Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Detail Modal -->
+<div class="modal-overlay" id="cust-detail-modal">
+  <div class="modal modal-lg"><div id="cust-detail-content"></div></div>
+</div>
+
+<script src="/js/shared.js"></script>
+<script>
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('customers');
+
+let allCustomers = [], editingCustId = null;
+
+async function load() {
+  try {
+    allCustomers = await GET('/customers');
+    applyFilter();
+  } catch(e) { toast('Error', 'Could not load customers', 'error'); }
+}
+
+function applyFilter() {
+  const q = document.getElementById('cust-search').value.toLowerCase();
+  const list = q ? allCustomers.filter(c => `${c.name} ${c.email||''} ${c.phone||''}`.toLowerCase().includes(q)) : allCustomers;
+  renderGrid(list);
+}
+
+function renderGrid(customers) {
+  const g = document.getElementById('customer-grid');
+  if (!customers.length) {
+    g.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">No customers found</div></div>';
+    return;
+  }
+  g.innerHTML = customers.map(c => `
+    <div class="customer-card" onclick="openDetail('${c.id}')">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+        <div class="customer-avatar">${c.name[0].toUpperCase()}</div>
+        <div>
+          <div style="color:var(--cream);font-size:.97rem;font-weight:600">${c.name}</div>
+          <div style="font-family:var(--font-mono);font-size:.62rem;color:var(--muted)">${c.id}</div>
+        </div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:.65rem;color:var(--dimmed);margin-bottom:.3rem">${c.email||'No email'}</div>
+      <div style="font-family:var(--font-mono);font-size:.65rem;color:var(--dimmed);margin-bottom:1rem">${c.phone||'No phone'}</div>
+      <div style="display:flex;justify-content:space-between;padding-top:.8rem;border-top:1px solid var(--border)">
+        <div>
+          <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--cream)">${c.total_bookings||0}</div>
+          <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--muted)">Bookings</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--gold)">${fmtCurrency(c.total_spent||0)}</div>
+          <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--muted)">Total Spent</div>
+        </div>
+        <div style="text-align:right">
+          ${c.active_bookings>0?`<span class="badge badge-green">● Active</span>`:'<span class="badge badge-muted">Inactive</span>'}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function openDetail(id) {
+  try {
+    const c = await GET('/customers/' + id);
+    document.getElementById('cust-detail-content').innerHTML = `
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:1rem">
+          <div class="customer-avatar" style="width:52px;height:52px;font-size:1.5rem">${c.name[0].toUpperCase()}</div>
+          <div>
+            <div class="modal-title">${c.name}</div>
+            <div style="font-family:var(--font-mono);font-size:.62rem;color:var(--muted)">${c.id}</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('cust-detail-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:1.5rem">
+          <div style="background:var(--off-black);border:1px solid var(--border);padding:1rem">
+            <div style="font-family:var(--font-mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem">Email</div>
+            <div style="font-size:.9rem;color:var(--cream)">${c.email||'—'}</div>
+          </div>
+          <div style="background:var(--off-black);border:1px solid var(--border);padding:1rem">
+            <div style="font-family:var(--font-mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem">Phone</div>
+            <div style="font-size:.9rem;color:var(--cream)">${c.phone||'—'}</div>
+          </div>
+          <div style="background:var(--off-black);border:1px solid var(--border);padding:1rem;grid-column:span 2">
+            <div style="font-family:var(--font-mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem">Address</div>
+            <div style="font-size:.9rem;color:var(--cream)">${c.address||'—'}</div>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem">Booking History</div>
+        ${c.bookings && c.bookings.length ? c.bookings.map(b=>`
+          <div class="booking-mini">
+            <div>
+              <div style="color:var(--cream);font-size:.85rem">${b.brand} ${b.model}</div>
+              <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--muted)">${b.id} · ${b.rental_days}d · ${fmtDate(b.rented_at)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.6rem">
+              <span style="font-family:var(--font-display);font-size:1rem;color:var(--gold)">${fmtCurrency(b.total_price)}</span>
+              ${statusBadge(b.status)}
+            </div>
+          </div>`).join('')
+          : '<div style="text-align:center;padding:2rem;color:var(--muted);font-family:var(--font-mono);font-size:.7rem">No bookings yet</div>'}
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('cust-detail-modal')">Close</button>
+        <button class="btn btn-outline" onclick="closeModal('cust-detail-modal');openEditCustomer('${c.id}')">Edit</button>
+        <button class="btn btn-red" onclick="closeModal('cust-detail-modal');deleteCustomer('${c.id}','${c.name}')">Delete</button>
+      </div>`;
+    openModal('cust-detail-modal');
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+function openAddCustomer() {
+  editingCustId = null;
+  document.getElementById('cf-title').textContent = 'Add Customer';
+  document.getElementById('cust-submit-btn').textContent = 'Add Customer';
+  ['cust-name','cust-email','cust-phone','cust-addr'].forEach(id => document.getElementById(id).value = '');
+  openModal('cust-form-modal');
+}
+
+function openEditCustomer(id) {
+  const c = allCustomers.find(x => x.id === id); if (!c) return;
+  editingCustId = id;
+  document.getElementById('cf-title').textContent = 'Edit Customer';
+  document.getElementById('cust-submit-btn').textContent = 'Save Changes';
+  document.getElementById('cust-name').value = c.name;
+  document.getElementById('cust-email').value = c.email || '';
+  document.getElementById('cust-phone').value = c.phone || '';
+  document.getElementById('cust-addr').value = c.address || '';
+  openModal('cust-form-modal');
+}
+
+async function submitCustomer() {
+  const name = document.getElementById('cust-name').value.trim();
+  if (!name) { toast('Validation', 'Name is required', 'error'); return; }
+  const body = { name, email: document.getElementById('cust-email').value.trim()||undefined, phone: document.getElementById('cust-phone').value.trim()||undefined, address: document.getElementById('cust-addr').value.trim()||undefined };
+  try {
+    if (editingCustId) {
+      await PUT('/customers/' + editingCustId, body);
+      toast('Customer Updated', name + ' has been updated');
+    } else {
+      await POST('/customers', body);
+      toast('Customer Added', name + ' has been registered');
+    }
+    closeModal('cust-form-modal');
+    load();
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+async function deleteCustomer(id, name) {
+  if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+  try {
+    await DELETE('/customers/' + id);
+    toast('Customer Deleted', name + ' has been removed');
+    load();
+  } catch(e) { toast('Error', e.message, 'error'); }
+}
+
+load();
+</script>
+</body>
+</html>

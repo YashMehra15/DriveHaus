@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Activity Log — DriveHaus</title>
+<link rel="stylesheet" href="/css/global.css"/>
+<style>
+.log-timeline { position: relative; padding-left: 2rem; }
+.log-timeline::before { content: ''; position: absolute; left: .5rem; top: 0; bottom: 0; width: 1px; background: var(--border); }
+.log-entry { position: relative; margin-bottom: 1.2rem; }
+.log-dot { position: absolute; left: -1.7rem; top: .35rem; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border); background: var(--black); }
+.log-dot.booking_created  { border-color: var(--green);  background: rgba(74,170,116,.2); }
+.log-dot.booking_returned { border-color: var(--blue);   background: rgba(74,136,200,.2); }
+.log-dot.booking_cancelled{ border-color: var(--red);    background: rgba(196,74,74,.2); }
+.log-dot.car_added        { border-color: var(--gold);   background: rgba(200,164,74,.2); }
+.log-dot.car_deleted      { border-color: var(--red);    background: rgba(196,74,74,.2); }
+.log-dot.customer_added   { border-color: var(--gold);   background: rgba(200,164,74,.2); }
+.log-dot.system           { border-color: var(--muted);  }
+.log-card { background: var(--card); border: 1px solid var(--border); padding: 1rem 1.2rem; transition: border-color .2s; }
+.log-card:hover { border-color: rgba(200,164,74,.3); }
+.log-type { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .3rem; }
+.log-message { font-size: .9rem; color: var(--text); margin-bottom: .3rem; }
+.log-time { font-family: var(--font-mono); font-size: .62rem; color: var(--muted); }
+.log-meta { font-family: var(--font-mono); font-size: .6rem; color: var(--muted); margin-top: .3rem; background: var(--off-black); padding: .4rem .7rem; border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div id="sidebar-mount"></div>
+<div class="main-content">
+  <div class="topbar">
+    <div><div class="topbar-title">Activity Log</div><div class="topbar-sub">All system events — last 50</div></div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" onclick="load()">↻ Refresh</button>
+    </div>
+  </div>
+  <div class="page">
+    <div class="filters-bar">
+      <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-chip" onclick="setFilter('booking_created',this)">Bookings</button>
+      <button class="filter-chip" onclick="setFilter('booking_returned',this)">Returns</button>
+      <button class="filter-chip" onclick="setFilter('car_added',this)">Cars</button>
+      <button class="filter-chip" onclick="setFilter('customer_added',this)">Customers</button>
+    </div>
+    <div class="log-timeline" id="log-timeline">
+      <div style="text-align:center;padding:3rem;color:var(--muted)">Loading activity…</div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/shared.js"></script>
+<script>
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('activity');
+
+let allLogs = [], filterType = 'all';
+
+async function load() {
+  try {
+    allLogs = await GET('/activity');
+    render();
+  } catch(e) { toast('Error', 'Could not load activity', 'error'); }
+}
+
+function setFilter(f, btn) {
+  filterType = f;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  const logs = filterType === 'all' ? allLogs : allLogs.filter(l => l.type === filterType);
+  const el = document.getElementById('log-timeline');
+  if (!logs.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-title">No activity</div></div>';
+    return;
+  }
+  const typeColors = {
+    booking_created: 'var(--green)', booking_returned: 'var(--blue)',
+    booking_cancelled: 'var(--red)', car_added: 'var(--gold)',
+    car_updated: 'var(--gold)', car_deleted: 'var(--red)',
+    customer_added: 'var(--gold)', system: 'var(--muted)',
+  };
+  el.innerHTML = logs.map(l => {
+    let meta = '';
+    if (l.meta) {
+      try { meta = `<div class="log-meta">${JSON.stringify(JSON.parse(l.meta), null, 2)}</div>`; } catch {}
+    }
+    return `
+      <div class="log-entry">
+        <div class="log-dot ${l.type}"></div>
+        <div class="log-card">
+          <div class="log-type" style="color:${typeColors[l.type]||'var(--muted)'}">${l.type.replace(/_/g,' ')}</div>
+          <div class="log-message">${l.message}</div>
+          <div class="log-time">${fmtDateTime(l.created_at)} · ${timeSince(l.created_at)}</div>
+          ${meta}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+load();
+setInterval(load, 20000);
+</script>
+</body>
+</html>
