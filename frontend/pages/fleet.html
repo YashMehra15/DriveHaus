@@ -139,7 +139,7 @@ let allCars = [], filterMode = 'all', editingCarId = null;
 
 async function loadFleet() {
   try {
-    allCars = await fetch('/api/cars').then(r=>r.json());
+    allCars = await GET('/cars');
     applyFilter();
   } catch(e) { toast('Error', 'Could not load fleet', 'error'); }
 }

@@ -128,6 +128,27 @@ app.post('/api/bookings', (req, res) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 // ── Cars (admin CRUD) ─────────────────────────────────────────────────────────
+// GET all cars (admin — same as public but includes auth check)
+app.get('/api/admin/cars', requireAdmin, (req, res) => {
+  let sql = 'SELECT * FROM cars';
+  const params = [];
+  const conditions = [];
+  const { available, category, fuel } = req.query;
+  if (available === 'true')  conditions.push('is_available = 1');
+  if (available === 'false') conditions.push('is_available = 0');
+  if (category) { conditions.push('category = ?'); params.push(category); }
+  if (fuel)     { conditions.push('fuel = ?');     params.push(fuel); }
+  if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ');
+  sql += ' ORDER BY brand, model';
+  res.json(db.prepare(sql).all(...params).map(parseCar));
+});
+
+app.get('/api/admin/cars/:id', requireAdmin, (req, res) => {
+  const row = db.prepare('SELECT * FROM cars WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Car not found' });
+  res.json(parseCar(row));
+});
+
 app.post('/api/admin/cars', requireAdmin, (req, res) => {
   const { brand, model, year, category, pricePerDay, seats, fuel, transmission,
           engine, power, torque, topSpeed, acceleration, mileage, luggage, tagline,
@@ -313,9 +334,12 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/admin.html'));
 });
 
-// ── Admin panel pages (serve index, JS guards auth) ───────────────────────
-app.get('/pages/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend', req.path));
+// ── Admin panel pages ─────────────────────────────────────────────────────
+app.get('/pages/:page', (req, res) => {
+  const filePath = path.join(__dirname, '../frontend/pages', req.params.page);
+  res.sendFile(filePath, err => {
+    if (err) res.status(404).send('Page not found');
+  });
 });
 
 // ── Catch-all → public site ───────────────────────────────────────────────

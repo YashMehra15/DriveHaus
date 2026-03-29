@@ -140,5 +140,12 @@ function adminLogout() {
   window.location.href = '/admin';
 }
 
-// Guard all admin pages on load
-document.addEventListener('DOMContentLoaded', () => { guardAdmin(); });
+// Guard all admin pages immediately — redirect to login if no token
+// Runs synchronously so the page never renders before auth is checked
+(function immediateGuard() {
+  // Skip guard on the login page itself
+  if (window.location.pathname === '/admin' || window.location.pathname === '/admin.html') return;
+  if (!sessionStorage.getItem('dh_admin_token')) {
+    window.location.replace('/admin');
+  }
+})();

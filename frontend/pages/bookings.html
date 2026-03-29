@@ -127,7 +127,10 @@ let allBookings = [], allCars = [], filterMode = 'all';
 
 async function load() {
   try {
-    [allBookings, allCars] = await Promise.all([GET('/bookings'), GET('/cars?available=true')]);
+    [allBookings, allCars] = await Promise.all([
+      GET('/bookings'),
+      GET('/cars?available=true')
+    ]);
     populateCarSelect();
     applyFilter();
   } catch(e) { toast('Error', 'Could not load bookings', 'error'); }
