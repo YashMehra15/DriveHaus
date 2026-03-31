@@ -1,7 +1,6 @@
 {
   "name": "drivehaus-backend",
   "version": "2.0.0",
-  "description": "DriveHaus Car Rental System - Full Stack Backend with SQLite",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

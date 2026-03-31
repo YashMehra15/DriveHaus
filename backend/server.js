@@ -12,8 +12,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // ── Admin credentials (change these in production) ────────────────────────────
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'drivehaus2024';
+const ADMIN_USER = 'ssgk4367yash@gmail.com';
+const ADMIN_PASS = 'Yash4367';
 const ADMIN_TOKEN = 'dh_admin_secret_token_2024'; // simple static token
 
 // ── Admin Auth Middleware ─────────────────────────────────────────────────────
