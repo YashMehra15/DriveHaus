@@ -1,0 +1,8 @@
+node_modules/
+drivehaus.db
+drivehaus.db-shm
+drivehaus.db-wal
+*.db
+*.db-shm
+*.db-wal
+.env
