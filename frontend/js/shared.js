@@ -1,6 +1,6 @@
 /* ══ DRIVEHAUS — ADMIN SHARED JS ════════════════════════════════════════════ */
 
-const API = '/api/admin';
+const API = 'https://drivehaus.onrender.com/api/admin';
 
 /* ── Admin Auth Guard ────────────────────────────────────────────────────── */
 function getToken() {

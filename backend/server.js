@@ -18,8 +18,10 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://localhost:3000",
-    "https://your-frontend.vercel.app" // 🔁 replace after deploy
+    "https://drive-haus.vercel.app"
   ],
+  credentials: true
+}));
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "x-admin-token"]
 }));
