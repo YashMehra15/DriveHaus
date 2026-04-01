@@ -1,10 +1,22 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'drivehaus.db');
+// ── FIX 1: Use /tmp on Render (ephemeral but always writable).
+// On local dev, fall back to the project folder.
+const DB_PATH = process.env.NODE_ENV === 'production'
+  ? '/tmp/drivehaus.db'
+  : path.join(__dirname, 'drivehaus.db');
 
 function initDB() {
-  const db = new Database(DB_PATH);
+  // ── FIX 2: Wrap in try/catch so startup crashes give a useful message.
+  let db;
+  try {
+    db = new Database(DB_PATH);
+  } catch (err) {
+    console.error('❌ Failed to open database at', DB_PATH, err.message);
+    process.exit(1);
+  }
+
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
 
@@ -41,7 +53,7 @@ function initDB() {
     CREATE TABLE IF NOT EXISTS customers (
       id          TEXT PRIMARY KEY,
       name        TEXT NOT NULL,
-      email       TEXT,
+      email       TEXT UNIQUE,
       phone       TEXT,
       address     TEXT,
       created_at  TEXT NOT NULL DEFAULT (datetime('now'))

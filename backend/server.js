@@ -6,7 +6,15 @@ const path    = require('path');
 const { initDB } = require('./database');
 
 const app = express();
-const db  = initDB();
+
+// ── FIX 2: Catch DB init failure cleanly instead of crashing silently
+let db;
+try {
+  db = initDB();
+} catch (err) {
+  console.error('❌ Database init failed:', err.message);
+  process.exit(1);
+}
 
 // ── ENV CONFIG ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
@@ -105,9 +113,19 @@ app.post('/api/bookings', (req, res) => {
   if (!car) return res.status(404).json({ error: 'Car not found' });
   if (!car.is_available) return res.status(409).json({ error: 'Car not available' });
 
-  const customerId = 'CUS' + Date.now();
-  db.prepare('INSERT INTO customers (id,name,email,phone) VALUES (?,?,?,?)')
-    .run(customerId, customerName, customerEmail || null, customerPhone || null);
+  // ── FIX 3: Reuse existing customer by email, or create new one safely
+  let customerId;
+  if (customerEmail) {
+    const existing = db.prepare('SELECT id FROM customers WHERE email = ?').get(customerEmail);
+    if (existing) {
+      customerId = existing.id;
+    }
+  }
+  if (!customerId) {
+    customerId = 'CUS' + Date.now();
+    db.prepare('INSERT OR IGNORE INTO customers (id,name,email,phone) VALUES (?,?,?,?)')
+      .run(customerId, customerName, customerEmail || null, customerPhone || null);
+  }
 
   const bookingId = 'BK' + uuidv4().slice(0, 6).toUpperCase();
   const total = car.price_per_day * rentalDays;
@@ -127,7 +145,6 @@ app.post('/api/bookings', (req, res) => {
 // ADMIN ROUTES
 // ════════════════════════════════════════════════════════════════════════════
 
-// Example admin route
 app.get('/api/admin/cars', requireAdmin, (req, res) => {
   const cars = db.prepare('SELECT * FROM cars').all();
   res.json(cars.map(parseCar));
