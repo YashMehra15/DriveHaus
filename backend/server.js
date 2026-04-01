@@ -20,10 +20,9 @@ app.use(cors({
     "http://localhost:3000",
     "https://drive-haus.vercel.app"
   ],
-  credentials: true
-}));
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "x-admin-token"]
+  allowedHeaders: ["Content-Type", "x-admin-token"],
+  credentials: true
 }));
 
 app.use(express.json());
