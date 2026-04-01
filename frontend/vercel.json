@@ -5,8 +5,24 @@
       "destination": "/admin.html"
     },
     {
-      "source": "/admin/(.*)",
-      "destination": "/admin.html"
+      "source": "/pages/dashboard.html",
+      "destination": "/pages/dashboard.html"
+    },
+    {
+      "source": "/pages/fleet.html",
+      "destination": "/pages/fleet.html"
+    },
+    {
+      "source": "/pages/bookings.html",
+      "destination": "/pages/bookings.html"
+    },
+    {
+      "source": "/pages/customers.html",
+      "destination": "/pages/customers.html"
+    },
+    {
+      "source": "/pages/activity.html",
+      "destination": "/pages/activity.html"
     },
     {
       "source": "/(.*)",

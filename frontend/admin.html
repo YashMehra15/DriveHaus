@@ -39,7 +39,8 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
   <a class="back-link" href="/">← Back to Public Site</a>
 </div>
 <script>
-// If already logged in, redirect
+// ── FIX 2: After login redirect to /pages/dashboard.html which Vercel
+// now handles via vercel.json rewrite rules.
 if(sessionStorage.getItem('dh_admin_token')){window.location.href='/pages/dashboard.html';}
 
 document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
@@ -51,7 +52,12 @@ async function doLogin(){
   errEl.style.display='none';
   if(!u||!p){errEl.textContent='Please enter both username and password.';errEl.style.display='block';return;}
   try{
-    const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    // ── FIX 1: Use absolute Render URL, not relative /api
+    const res=await fetch('https://drivehaus.onrender.com/api/admin/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
     const data=await res.json();
     if(!res.ok)throw new Error(data.error||'Login failed');
     sessionStorage.setItem('dh_admin_token',data.token);
