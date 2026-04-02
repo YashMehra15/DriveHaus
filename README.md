@@ -101,6 +101,12 @@ npm run dev
 
 ---
 
+
+## 🚀 Live Demo
+https://cpu-scheduling-simulator-smoky.vercel.app/
+
+---
+
 ## 🎯 Purpose
 
 This project demonstrates a **real-world full-stack booking system** with authentication, database integration, and user interaction.
