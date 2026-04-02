@@ -591,6 +591,11 @@ async function submitBooking(){
   }catch(e){toast('Booking Failed',e.message,'error');}
 }
 
+// Wake up Render immediately — free tier sleeps after 15 min.
+// Pinging /health as soon as the page loads means the server is
+// warm by the time the user scrolls down to the fleet.
+fetch('https://drivehaus.onrender.com/health').catch(() => {});
+
 loadCars();
 </script>
 </body>
