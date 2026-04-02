@@ -103,7 +103,8 @@ npm run dev
 
 
 ## 🚀 Live Demo
-https://cpu-scheduling-simulator-smoky.vercel.app/
+
+https://drive-haus.vercel.app/
 
 ---
 
